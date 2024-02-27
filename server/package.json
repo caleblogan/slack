@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "npx tsx watch ./src/app.ts"
   },
-  "author": "caleb logan",
+  "author": "",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",

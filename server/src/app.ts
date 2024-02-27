@@ -1,38 +1,43 @@
-import dotenv from "dotenv"
-import path from "path"
-import express, { Request, Response } from "express"
+import express from "express"
 import cors from "cors"
 import * as uuid from "uuid"
 import expressSession from "express-session"
 import pgSession from "connect-pg-simple"
-import os from "os"
 
-// TODO: move to config file so order of precedence is clear
-dotenv.config({ path: path.join(os.homedir(), ".env", "authapp.env") })
 import pool from "./db"
-import { asyncWrapper } from "./middleware"
+import { asyncWrapper, authMiddleware } from "./middleware"
+import { GithubApi } from "./githubapi"
+import { randomInt } from "crypto"
+import { config } from "./config"
 
-if (!process.env.SESSION_SECRET) {
-    throw new Error("SESSION_SECRET is not set")
-}
 
 const app = express()
-const port = process.env.PORT || 3000
+const port = config.port
 const store = pgSession(expressSession)
 
+app.use((req, res, next) => {
+    console.log(process.env)
+
+    next()
+})
 app.use(express.json())
 app.use(cors({ credentials: true, origin: true }));
 app.use(expressSession({
     store: new store({
         pool: pool
     }),
-    secret: process.env.SESSION_SECRET,
+    secret: config.sessionSecret,
     resave: false,
     cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }, // 30 days
     saveUninitialized: false
 }));
 
-export type ApiUser = Omit<UserModel, "passwordhash">
+export type ApiUser = UserModel
+export interface UserModel {
+    id: string
+    email: string
+    name: string
+}
 
 declare global {
     namespace Express {
@@ -46,10 +51,14 @@ declare module 'express-session' {
     interface SessionData {
         user?: ApiUser
         githubToken?: string
+        hi?: string
     }
 }
 
 app.get('/session', (req, res) => {
+    pool.query('SELECT * from users where email = $1', ["dank"], (err, res) => {
+        console.log(err, res.rows[0])
+    })
     res.json(req.session || {})
 })
 
@@ -72,27 +81,12 @@ app.get('/secret', authMiddleware, asyncWrapper(async (req, res, next) => {
     res.json("You have access to the secret #asdjfkasjdfkjasdfj")
 }))
 
-interface UserModel {
-    id: string
-    email: string
-    name: string
-}
 
-
-function authMiddleware(req: Request, res: Response, next: Function) {
-    if (req.session.user) {
-        next()
-    } else {
-        res.status(401).json({ error: "Not Authenticated" })
-    }
-}
-
-// client_id=*****&redirect_uri=http://localhost:3000/auth/callback/github&state=1234akjalksdjf&scope=user:email
 app.get('/auth/login/github', (req, res) => {
     const redirectUri = encodeURIComponent('http://localhost:3000/auth/callback/github')
     const state = uuid.v4()
     const scope = encodeURIComponent('user:email')
-    const githubLogin = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`
+    const githubLogin = `https://github.com/login/oauth/authorize?client_id=${config.githubClientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`
     res.json({ url: githubLogin })
 })
 
@@ -109,8 +103,8 @@ app.get('/auth/callback/github', asyncWrapper(async (req, res, next) => {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            client_id: process.env.GITHUB_CLIENT_ID,
-            client_secret: process.env.GITHUB_CLIENT_SECRET,
+            client_id: config.githubClientId,
+            client_secret: config.githubClientSecret,
             code: code
         }),
     });
@@ -118,10 +112,10 @@ app.get('/auth/callback/github', asyncWrapper(async (req, res, next) => {
     console.log(data)
     // get access token
     const accessToken = data.access_token
-    console.log("TOKE:", accessToken)
+    console.log("TOKEN:", accessToken)
     req.session.githubToken = accessToken
     // get email from github
-    const email = await githubApiGetEmail(accessToken)
+    const email = await GithubApi.getEmail(accessToken)
     console.log("email:", email)
     // check if email exists in db
     const userQuery = await pool.query('SELECT * FROM users WHERE email = $1', [email])
@@ -129,7 +123,8 @@ app.get('/auth/callback/github', asyncWrapper(async (req, res, next) => {
     // - if not, create user
     if (!user) {
         console.log("CREATING USER")
-        const userCreateQuery = await pool.query('INSERT INTO users (id, email, name, role) VALUES ($1, $2, $3, $4) RETURNING *', [uuid.v4(), email, "none", "user"])
+        const username = generateSafeBase64(10)
+        const userCreateQuery = await pool.query('INSERT INTO users (id, username, email, name) VALUES ($1,$2, $3, $4) RETURNING *', [uuid.v4(), username, email, "null"])
         user = userCreateQuery.rows[0]
     }
     // add user to session
@@ -139,37 +134,15 @@ app.get('/auth/callback/github', asyncWrapper(async (req, res, next) => {
 
 app.get('/github/me', asyncWrapper(async (req, res, next) => {
     if (!req.session.githubToken) { return next(new Error("No token")) }
-    res.json(await githubApiGetUser(req.session.githubToken))
+    res.json(await GithubApi.getUser(req.session.githubToken))
 }))
 
 app.get('/github/email', asyncWrapper(async (req, res, next) => {
     if (!req.session.githubToken) { return next(new Error("No token")) }
-    const email = await githubApiGetEmail(req.session.githubToken)
+    const email = await GithubApi.getEmail(req.session.githubToken)
     res.json({ email })
 }))
 
-async function githubApiGetEmail(token: string): Promise<string> {
-    const response = await fetch('https://api.github.com/user/emails', {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-        }
-    })
-    const data = await response.json()
-    return data[0]?.email
-}
-
-async function githubApiGetUser(token: string) {
-    const response = await fetch('https://api.github.com/user', {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-        }
-    })
-    return await response.json()
-}
 
 app.use((err: any, req: any, res: any, next: Function) => {
     if (err) {
@@ -181,3 +154,12 @@ app.use((err: any, req: any, res: any, next: Function) => {
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
+function generateSafeBase64(length: number) {
+    const safeChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
+    const result: string[] = []
+    for (let i = 0; i < length; i++) {
+        result.push(safeChars[randomInt(0, safeChars.length)])
+    }
+    return result.join('')
+}
+
