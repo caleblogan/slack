@@ -8,6 +8,8 @@ import { envOnly } from "./middleware"
 import { config } from "./config"
 import authRouter from "./controllers/auth"
 import debugRouter from "./controllers/debug"
+import pageRouter from "./controllers/page"
+import linksRouter from "./controllers/links"
 
 export type ApiUser = UserModel
 export interface UserModel {
@@ -49,6 +51,8 @@ app.use(expressSession({
 }));
 
 app.use('/auth', authRouter)
+app.use('/page', pageRouter)
+app.use('/links', linksRouter)
 app.use('/debug', envOnly("dev"), debugRouter)
 
 
