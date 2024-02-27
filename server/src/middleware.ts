@@ -14,3 +14,15 @@ export function authMiddleware(req: Request, res: Response, next: Function) {
         res.status(401).json({ error: "Not Authenticated" })
     }
 }
+
+export function envOnly(mode: "dev" | "prod") {
+    return (req: Request, res: Response, next: Function) => {
+        if (process.env.NODE_ENV === mode) {
+            next()
+        } else {
+            console.log("Mode", process.env.NODE_ENV, "is not", mode)
+            res.status(401).json({ error: "Not Authenticated" })
+        }
+    }
+}
+
