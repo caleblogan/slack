@@ -9,7 +9,3 @@ export default router
 router.get('/session', (req, res) => {
     res.json(req.session || {})
 })
-
-router.get('/me', asyncWrapper(async (req, res, next) => {
-    return res.json({ user: req.session.user })
-}))

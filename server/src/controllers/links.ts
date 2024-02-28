@@ -6,6 +6,14 @@ import { v4 as uuid } from "uuid"
 const router = Router()
 export default router
 
+export interface Link {
+    id: string
+    page_id: string
+    name: string
+    url: string
+    active: boolean
+}
+
 router.post('/', authMiddleware, asyncWrapper(async (req, res) => {
     const { name, url } = req.body
     const pageId = await getPageId(req.session.user?.id ?? "")
@@ -38,7 +46,7 @@ router.delete('/:id', authMiddleware, asyncWrapper(async (req, res) => {
     res.json({ link: query.rows[0] })
 }))
 
-async function getPageId(userId: string) {
+export async function getPageId(userId: string) {
     const pageQuery = await pool.query("SELECT * FROM pages WHERE user_id = $1", [userId]);
     if (pageQuery.rows.length === 0) {
         console.log("Page not found for user", userId, pageQuery.rows)

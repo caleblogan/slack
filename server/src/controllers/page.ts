@@ -6,6 +6,15 @@ import { v4 as uuid } from "uuid"
 const router = Router()
 export default router
 
+export interface Page {
+    id: string
+    user_id: string
+    bio: string
+    background_color: string
+    created_at: Date
+    updated_at: Date
+}
+
 router.post('/', envOnly("dev"), authMiddleware, asyncWrapper(async (req, res) => {
     const { bio, background_color } = req.body
     const query = await pool.query(

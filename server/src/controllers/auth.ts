@@ -10,6 +10,10 @@ import { ApiUser } from "../app"
 
 const router = Router()
 
+router.get('/me', asyncWrapper(async (req, res) => {
+    return res.json({ user: req.session.user })
+}))
+
 router.get('/logout', asyncWrapper(async (req, res) => {
     req.session.destroy((err) => {
         if (err) {
