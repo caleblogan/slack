@@ -3,12 +3,12 @@ import { createLink, deleteLink, getLinks, getPage, updateLink, updatePage } fro
 import { Link } from "../../../server/src/controllers/links"
 import { useNavigate } from "react-router-dom"
 import { UserContext } from "../context"
+import { Button } from "@/components/ui/button"
 
 export default function AdminPage() {
-
     return (
-        <div>
-            <h1>Admin Page</h1>
+        <div className="bg-slate-100 rounded text-gray-900 flex flex-col items-center">
+            <h1 className="text-4xl p-4">Admin Page</h1>
             <PageCustomizationForm />
             <Links />
         </div>
@@ -44,29 +44,38 @@ function PageCustomizationForm() {
             console.log("error", error)
         }
     }
-    return <form onSubmit={handleSubmit}>
-        <h2>Check out your public bage <a href={user?.username} target="_blank">{user?.username}</a></h2>
-        <h2>Customize Your Page</h2>
-        <label htmlFor="background-color">
-            <input
-                type="color"
-                id="background-color"
-                name="background-color"
-                onChange={(e) => setBgColor(e.target.value)}
-                value={bgColor}
-            />
-            {" "} background color
-        </label>
-        <label htmlFor="bio">
-            <textarea
-                id="bio" name="bio"
-                value={bio}
-                onChange={e => setBio(e.target.value)}
-                maxLength={180}
-            />
-            {" "} bio
-        </label>
-        <button type="submit">Save</button>
+    return <form className="mb-8 border-b-2 pb-8" onSubmit={handleSubmit}>
+        <h2 className="text-lg">
+            Check out your public bage {""}
+            <a className="text-emerald-700" href={user?.username} target="_blank">{user?.username}</a>
+        </h2>
+        <h2 className="text-2xl mt-5">Customize Your Page</h2>
+        <div>
+            <label className="mt-4 w-100" htmlFor="background-color">
+                <div className="text-md mr-4 mb-1">background color</div>
+                <input
+                    className="border-2 border-gray-300 rounded-md "
+                    type="color"
+                    id="background-color"
+                    name="background-color"
+                    onChange={(e) => setBgColor(e.target.value)}
+                    value={bgColor}
+                />
+            </label>
+        </div>
+        <div>
+            <label className="mt-4" htmlFor="bio">
+                <div className="text-md mr-4 mb-1">bio</div>
+                <textarea
+                    className="border-2 border-gray-300 rounded-md p-2 w-96 h-36"
+                    id="bio" name="bio"
+                    value={bio}
+                    onChange={e => setBio(e.target.value)}
+                    maxLength={180}
+                />
+            </label>
+        </div>
+        <Button className="mt-4" type="submit">Save</Button>
     </form>
 }
 
@@ -100,7 +109,7 @@ function Links() {
         />
     )
     return <div>
-        <h2>Links</h2>
+        <h2 className="text-2xl mt-5">Links</h2>
         {linkItems}
         <CreateLink addLink={handleAddLink} />
     </div>
@@ -133,11 +142,11 @@ function LinkEditor({ link, onDelete, onUpdate }: { link: Link, onDelete: (id: s
     useEffect(() => {
         reset()
     }, [link])
-    return <li key={link.id}>
+    return <li className="list-none m-4 text-lg" key={link.id}>
         {
             editing
                 ? <form onSubmit={handleSubmit}>
-                    <label htmlFor="name">
+                    <label className="" htmlFor="name">
                         <input type="text" id="name" name="name" value={name} onChange={e => setName(e.target.value)} />
                         {" "} Name
                     </label >
@@ -149,17 +158,19 @@ function LinkEditor({ link, onDelete, onUpdate }: { link: Link, onDelete: (id: s
                         <input type="checkbox" id="active" name="active" checked={active} onChange={e => setActive(e.target.checked)} />
                         {" "} Active
                     </label>
-                    <button>Save</button>
-                    <button onClick={reset}>Cancel</button>
+                    <Button>Save</Button>
+                    <Button onClick={reset}>Cancel</Button>
                 </form>
                 : <>
-                    <a href={link.url}>{link.name}</a>
-                    <input type="checkbox" checked={active} onChange={e => {
-                        setEditing(true)
-                        setActive(e.target.checked)
-                    }} />
-                    <button onClick={() => setEditing(true)}>Edit</button>
-                    <button onClick={handleDelete}>Delete</button>
+                    <a className="mr-2 w-52 inline-block" href={link.url}>{link.name}</a>
+                    <label className="mr-2" htmlFor="active">Active
+                        <input className="mr-2 ml-2" type="checkbox" checked={active} onChange={e => {
+                            setEditing(true)
+                            setActive(e.target.checked)
+                        }} />
+                    </label>
+                    <Button className="mr-2" onClick={() => setEditing(true)}>Edit</Button>
+                    <Button onClick={handleDelete}>Delete</Button>
                 </>
         }
     </li>
@@ -179,27 +190,34 @@ function CreateLink({ addLink }: { addLink: (link: Link) => void }) {
         try {
             const result = await createLink({ name, url })
             addLink(result)
+            setName("")
+            setUrl("")
         } catch (error) {
             console.log("error", error)
         }
     }
 
     return (
-        inputVisible
-            ? <form onClick={handleSubmit}>
-                <label htmlFor="name">
-                    <input type="text" id="name" name="name" value={name} onChange={e => setName(e.target.value)} />
-                    {" "} Name
-                </label >
-                <label htmlFor="url">
-                    <input type="url" id="url" name="url" value={url} onChange={e => setUrl(e.target.value)} />
-                    {" "} URL
-                </label>
-                <button>Save</button>
-                <button onClick={() => setInputVisible(false)}>Cancel</button>
-            </form >
-            : <>
-                <button onClick={() => setInputVisible(true)}>Add Link</button>
-            </>
+        <div className="border-t-2 mt-10 mb-10">
+            {inputVisible
+                ? <form onClick={handleSubmit}>
+                    <label className="block mt-8" htmlFor="name">
+                        <span className="mr-4">Name</span>
+                        <input className="border-2 p-2 border-gray-300 h-8 rounded-md" type="text" id="name" name="name" value={name} onChange={e => setName(e.target.value)} />
+                    </label >
+                    <label className="block mt-8" htmlFor="url">
+                        <span className="mr-2">URL</span>
+                        <input className="border-2 p-2 border-gray-300 h-8 rounded-md" type="url" id="url" name="url" value={url} onChange={e => setUrl(e.target.value)} />
+                    </label>
+                    <div className="mt-4">
+                        <Button className="mr-4">Save</Button>
+                        <Button onClick={() => setInputVisible(false)}>Cancel</Button>
+                    </div>
+                </form >
+                : <>
+                    <Button className="mt-8 mb-8" onClick={() => setInputVisible(true)}>Add Link</Button>
+                </>
+            }
+        </div>
     )
 }

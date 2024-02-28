@@ -24,19 +24,18 @@ export default function LinksPage() {
     }, [username])
     const linkItems = links?.map((link) => (
         <li
+            className="cursor-pointer text-center text-xl m-4 border-2 border-black w-96 p-2 rounded-lg bg-gray-100 hover:bg-gray-300 transition-colors duration-300"
             key={link.id}
-            style={{ cursor: "pointer", fontSize: "1.5em", padding: ".5em 1em", color: "white", width: "18em", border: "1px solid white" }}
-        ><a style={{ color: "white" }} href={link.url}>{link.name}</a></li>
+        ><a href={link.url}>{link.name}</a></li>
     ))
     return (
         !page
             ? <div>Loading...</div>
-            : <div style={{
-                background: `linear-gradient(330deg, rgba(0,0,0,0.7), ${page?.background_color})`,
-                top: 0, left: 0, position: "absolute", width: "100vw", height: "100vh", backgroundColor: page?.background_color
-            }}>
-                <h1>{page?.bio}</h1>
-                <ul style={{ gap: "1em", flexDirection: "column", display: "flex", alignItems: "center", listStyle: "none" }}>
+            : <div
+                style={{ background: `linear-gradient(rgba(0, 0, 0, .2), ${page.background_color})` }}
+                className="flex flex-col items-center h-screen ">
+                <h1 className="text-3xl m-8">{page?.bio}</h1>
+                <ul>
                     {linkItems ?? "loading..."}
                 </ul>
             </div>

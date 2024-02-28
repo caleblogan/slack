@@ -10,4 +10,7 @@
 [*] auth context
 [*] login & redirect to admin
 [*] figure out css/component libs
-[] install tailwind / shadcn
+[*] install tailwind / shadcn
+[*] style admin page
+[*] style login page
+[*] style link page
