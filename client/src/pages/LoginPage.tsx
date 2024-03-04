@@ -19,7 +19,7 @@ export default function LoginPage() {
     }
     return (
         <div className="flex flex-col items-center justify-center min-h-screen">
-            <h1 className="text-3xl mb-10">Login Page</h1>
+            <h1 className="text-3xl mb-10">Login with One of Your Accounts</h1>
             <Button onClick={handleGithubLogin}>Login with Github</Button>
         </div>
     )

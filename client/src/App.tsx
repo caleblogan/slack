@@ -1,18 +1,14 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import './App.css'
-import LoginPage from './pages/LoginPage';
-import AdminPage from './pages/AdminPage';
-import LinksPage from './pages/LinksPage';
 import { UserContext } from './context';
 import { useEffect, useState } from 'react';
 import { ApiUser } from '../../server/src/app';
 import { getMe } from './api/api';
+import Client from './pages/Client';
 
 const router = createBrowserRouter([
-  { path: "/", element: <LoginPage /> },
-  { path: "/admin", element: <AdminPage /> },
-  { path: "/:username", element: <LinksPage /> },
+  { path: "/client", element: <Client /> }
 ]);
 
 export default function App() {

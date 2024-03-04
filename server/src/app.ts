@@ -4,13 +4,10 @@ import expressSession from "express-session"
 import pgSession from "connect-pg-simple"
 
 import pool from "./db"
-import { asyncWrapper, envOnly } from "./middleware"
+import { envOnly } from "./middleware"
 import { config } from "./config"
 import authRouter from "./controllers/auth"
 import debugRouter from "./controllers/debug"
-import pageRouter from "./controllers/page"
-import linksRouter from "./controllers/links"
-import publicRouter from "./controllers/public"
 
 export type ApiUser = UserModel
 export interface UserModel {
@@ -53,9 +50,6 @@ app.use(expressSession({
 }));
 
 app.use('/auth', authRouter)
-app.use('/page', pageRouter)
-app.use('/links', linksRouter)
-app.use('/public', publicRouter)
 app.use('/debug', envOnly("dev"), debugRouter)
 
 

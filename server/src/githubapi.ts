@@ -12,7 +12,6 @@ export namespace GithubApi {
         const data = await response.json()
         return data[0]?.email
     }
-
     export async function getUser(token: string) {
         const response = await fetch(`${BASE_URL}user`, {
             method: 'GET',

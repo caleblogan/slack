@@ -2,7 +2,7 @@ import dotenv from "dotenv"
 import path from "path"
 import os from "os"
 
-dotenv.config({ path: path.join(os.homedir(), ".env", "linktree.env") })
+dotenv.config({ path: path.join(os.homedir(), ".env", "slack.env") })
 
 export const config = {
     port: process.env.PORT || 3000,
