@@ -29,8 +29,7 @@
 }
 
 .client .content main aside {
-    background-color: #47224B;
-    opacity: .8;
+    background-color: rgb(71, 34, 75, .8);
     border-top-left-radius: .4em;
     border-bottom-left-radius: .4em;
     padding: .5em;

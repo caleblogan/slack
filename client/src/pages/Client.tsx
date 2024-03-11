@@ -5,7 +5,8 @@ import { UserRoundPlus, Plus, SendHorizonal, Home, MessagesSquare, Bell, Bookmar
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Client() {
     return (
@@ -19,7 +20,15 @@ export default function Client() {
                             <Button variant="ghost" className="text-md mr-2"><b>boogl<ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
                             <div className="">
                                 <Button variant="ghost" className="text-md p-2 mr-0"><b><Filter className="inline-block mt-[-2px]" size={16} /> </b></Button>
-                                <Button variant="ghost" className="text-md p-2 mr-0"><b><MailPlus className="inline-block mt-[-2px]" size={16} /> </b></Button>
+
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild><Button variant="ghost" className="text-md p-2 mr-0"><b><MailPlus className="inline-block mt-[-2px]" size={16} /> </b></Button></TooltipTrigger>
+                                        <TooltipContent className="">
+                                            <p className="">new message</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                             </div>
                         </div>
                         <Button variant="default" className="text-sm mb-4"><Rocket className="inline-block mr-2 " size={16} />Upgrade Plan</Button>
@@ -38,7 +47,7 @@ export default function Client() {
                                 <li><Button variant="ghost" className="ml-1 h-7 w-full justify-start">clogan202</Button></li>
                                 <li>
                                     <Dialog>
-                                        <DialogTrigger>
+                                        <DialogTrigger asChild>
                                             <Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add coworkers</Button>
                                         </DialogTrigger>
                                         <DialogContent>
@@ -117,8 +126,8 @@ function Message({ avatarSrc, avatarFallback, username, time, message }: { avata
 function SideDropdown({ trigger, children, defaultOpen = true }: { trigger: React.ReactNode, children: React.ReactNode, defaultOpen?: boolean }) {
     const [open, setOpen] = useState(defaultOpen)
     return <Collapsible open={open} onOpenChange={setOpen} className="flex flex-col mb-2">
-        <CollapsibleTrigger>
-            <Button variant="ghost" className="text-sm block">
+        <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="text-sm block text-left">
                 {open ? <ChevronDown className="inline-block mr-2" size={16} /> : <ChevronRight className="inline-block mr-2" size={16} />}
                 {trigger}</Button>
         </CollapsibleTrigger>

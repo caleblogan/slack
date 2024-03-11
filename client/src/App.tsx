@@ -14,10 +14,10 @@ const router = createBrowserRouter([
 export default function App() {
   const [user, setUser] = useState<ApiUser | null>(null);
 
-  useEffect(() => {
-    getMe()
-      .then((thisUser) => { setUser(thisUser); })
-  }, [])
+  // useEffect(() => {
+  //   getMe()
+  //     .then((thisUser) => { setUser(thisUser); })
+  // }, [])
 
   return (
     <>
