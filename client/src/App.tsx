@@ -2,9 +2,8 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import './App.css'
 import { UserContext } from './context';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ApiUser } from '../../server/src/app';
-import { getMe } from './api/api';
 import Client from './pages/Client';
 import HomePage from './pages/HomePage';
 
@@ -14,7 +13,7 @@ const router = createBrowserRouter([
     element: <Client />,
     children: [
       {
-        path: "",
+        path: ":channelId?",
         element: <HomePage />
       },
       {
@@ -34,7 +33,7 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  const [user, setUser] = useState<ApiUser | null>(null);
+  const [user] = useState<ApiUser | null>(null);
 
   // useEffect(() => {
   //   getMe()

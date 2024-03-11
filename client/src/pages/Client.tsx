@@ -1,7 +1,7 @@
 import Header from "@/components/Header/Header";
 import "./Client.css";
 import { Home, MessagesSquare, Bell, Bookmark, MoreHorizontal } from "lucide-react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 
 export default function Client() {
     return (

@@ -4,9 +4,20 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@radix-ui/react-collapsible"
 import { ChevronDown, ChevronRight, Filter, MailPlus, MessageCircleMore, Plus, Rocket, SendHorizonal, UserRoundPlus } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom"
 
 export default function HomePage() {
+    const { workspaceId, channelId } = useParams()
+    const { pathname } = useLocation()
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if (!channelId) {
+            navigate(`${pathname}/aaaaaa`)
+        }
+    }, [])
+
     return <main>
         <aside className="flex flex-col">
             <div className="flex justify-between mb-4">
@@ -30,8 +41,8 @@ export default function HomePage() {
             <Button variant="ghost" className="text-sm justify-start mb-6"><SendHorizonal className="inline-block mr-2" size={18} />Drafts & sent</Button>
             <SideDropdown trigger="Channels">
                 <ul>
-                    <li><Button variant="ghost" className="ml-1 h-7 w-full justify-start"># general</Button></li>
-                    <li><Button variant="ghost" className="ml-1 h-7 w-full justify-start"># random</Button></li>
+                    <Link to={(channelId ? "../" : "") + "aaaaaa"}><li><Button variant="ghost" className="ml-1 h-7 w-full justify-start"># general</Button></li></Link>
+                    <Link to={(channelId ? "../" : "") + "bbbbbb"}><li><Button variant="ghost" className="ml-1 h-7 w-full justify-start"># random</Button></li></Link>
                     <li><Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add channels</Button></li>
                 </ul>
             </SideDropdown>
@@ -78,6 +89,7 @@ export default function HomePage() {
             <div className="border-b border-solid p-3">
                 <Button variant="ghost" className="text-md mr-2"><b># general <ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
                 <span className="text-sm font-thin text-gray-500">Comanpy-wide announcements and work-based matters</span>
+                {channelId}
             </div>
             <div className="flex-1 relative overflow-auto">
                 <div className="border-b border-solid p-6">
