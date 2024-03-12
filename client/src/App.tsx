@@ -6,6 +6,9 @@ import { useState } from 'react';
 import { ApiUser } from '../../server/src/app';
 import Client from './pages/Client';
 import HomePage from './pages/HomePage';
+import DMsPage from './pages/DMsPage';
+import ActivityPage from './pages/ActivityPage';
+import LaterPage from './pages/LaterPage';
 
 const router = createBrowserRouter([
   {
@@ -18,15 +21,15 @@ const router = createBrowserRouter([
       },
       {
         path: "dms",
-        element: <div>dms</div>
+        element: <DMsPage />
       },
       {
         path: "activity",
-        element: <div>activity</div>
+        element: <ActivityPage />
       },
       {
         path: "later",
-        element: <div>later</div>
+        element: <LaterPage />
       }
     ]
   }

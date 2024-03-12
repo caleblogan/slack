@@ -8,7 +8,7 @@ import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom"
 
 export default function HomePage() {
-    const { workspaceId, channelId } = useParams()
+    const { channelId } = useParams()
     const { pathname } = useLocation()
     const navigate = useNavigate()
 
@@ -107,7 +107,7 @@ export default function HomePage() {
                 </div>
             </div>
             <div className="flex bg-white relative">
-                <textarea className="flex-grow h-36 p-2 m-4 border rounded-md border-solid" placeholder="Message #general"></textarea>
+                <textarea className="flex-grow h-36 p-2 m-4 border rounded-md border-solid resize-none" placeholder="Message #general"></textarea>
             </div>
         </div>
     </main>
