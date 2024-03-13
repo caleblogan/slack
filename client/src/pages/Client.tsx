@@ -2,8 +2,7 @@ import Header from "@/components/Header/Header";
 import "./Client.css";
 import { Home, MessagesSquare, Bell, Bookmark, MoreHorizontal, Plus } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default function Client() {
     return (
@@ -59,10 +58,6 @@ function WorkspaceLink({ name }: { name: string }) {
             </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="ml-2 min-w-[300px]">
-            {/* <Button className="flex flex-col pt-6 pb-6 items-start w-full">
-                <h3>Boogl</h3>
-                <p>juggle-hq.slack.com</p>
-            </Button> */}
             <DropdownMenuItem className="flex flex-col items-start cursor-pointer">
                 <h3>Boogl</h3>
                 <p className="text-gray-600">juggle-hq.slack.com</p>

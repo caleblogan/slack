@@ -5,12 +5,80 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@radix-ui/react-collapsible"
 import { ChevronDown, ChevronRight, Filter, MailPlus, MessageCircleMore, Plus, Rocket, SendHorizonal, UserRoundPlus } from "lucide-react"
 import { useEffect, useState } from "react"
-import { Link, useNavigate, useParams, useLocation, NavLink } from "react-router-dom"
+import { useNavigate, useParams, useLocation, NavLink } from "react-router-dom"
+
+type MessageModel = {
+    avatarSrc: string,
+    username: string,
+    date: string,
+    message: string
+}
+
+type ChannelModel = {
+    [id: string]: {
+        id: string,
+        name: string,
+        description: string
+        topic: string,
+        messages: MessageModel[]
+    }
+}
+const channels: ChannelModel = {
+    aaaaaa: {
+        id: "aaaaaa",
+        name: "general",
+        topic: "Company-wide announcements and work-based matters",
+        description: "You created this channel on July 18th, 2017. This is the very beginning of the general channel. Description: This channel is for team-wide communication and announcements. All team members are in this channel.",
+        messages: Array(4).fill(null).map(() => ({
+            avatarSrc: "https://github.com/shadcn.png",
+            username: "clogan202",
+            date: "8:44 PM",
+            message: "You created this channel on July 18th, 2017. This is the very beginning of the general channel. Description: This channel is for team-wide communication and announcements. All team members are in this channel."
+        }))
+    },
+    bbbbbb: {
+        id: "bbbbbb",
+        name: "random",
+        topic: "Non-work banter and water cooler conversation",
+        description: "Non-work banter and water cooler conversation",
+        messages: []
+    },
+    clogan202: {
+        id: "clogan202",
+        name: "clogan202",
+        topic: "Direct messages",
+        description: "Direct messages",
+        messages: []
+    },
+    slackbot: {
+        id: "slackbot",
+        name: "slackbot",
+        topic: "Slackbot!!!!!",
+        description: "Do your bidding",
+        messages: []
+    },
+    pybot: {
+        id: "pybot",
+        name: "pybot",
+        topic: "Python bot",
+        description: "Python bot",
+        messages: []
+    },
+    rtfm: {
+        id: "rtfm",
+        name: "rtfm",
+        topic: "Read the **** manual",
+        description: "Read the **** manual",
+        messages: []
+    }
+}
 
 export default function HomePage() {
     const { channelId } = useParams()
     const { pathname } = useLocation()
     const navigate = useNavigate()
+
+    const channel = channelId ? channels[channelId] : channels["aaaaaa"]
 
     useEffect(() => {
         if (!channelId) {
@@ -85,25 +153,26 @@ export default function HomePage() {
             </SideDropdown>
 
         </aside>
+
         <div className="workspace text-gray-900 h-max flex flex-col">
             <div className="border-b border-solid p-3">
-                <Button variant="ghost" className="text-md mr-2"><b># general <ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
-                <span className="text-sm font-thin text-gray-500">Comanpy-wide announcements and work-based matters</span>
-                {channelId}
+                <Button variant="ghost" className="text-md mr-2"><b># {channel.name}<ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
+                <span className="text-sm font-thin text-gray-500">{channel.topic}</span>
             </div>
             <div className="flex-1 relative overflow-auto">
                 <div className="border-b border-solid p-6">
-                    <h2 className="mt-10 text-2xl mb-2"><b># general</b></h2>
-                    <p>You created this channel on July 18th, 2017. This is the very beginning of the general channel. Description: This channel is for team-wide communication and announcements. All team members are in this channel. (edit)</p>
+                    <h2 className="mt-10 text-2xl mb-2"><b># {channel.name}</b></h2>
+                    <p>{channel.description} (edit)</p>
                     <Button variant="outline" className="mt-4"><UserRoundPlus size={14} className="mr-2" />Add coworkers</Button>
                 </div>
                 <div className="message-container p-6 relative">
-                    <Message avatarSrc="https://github.com/shadcn.png" avatarFallback="CN" username="clogan202" time="8:44 PM" message="You created this channel on July 18th, 2017. This is the very beginning of the general channel. Description: This channel is for team-wide communication and announcements. All team members are in this channel" />
-                    <Message avatarSrc="https://github.com/shadcn.png" avatarFallback="CN" username="clogan202" time="8:44 PM" message="You created this channel on July 18th, 2017. This is the very beginning of the general channel. Description: This channel is for team-wide communication and announcements. All team members are in this channel" />
-                    <Message avatarSrc="https://github.com/shadcn.png" avatarFallback="CN" username="clogan202" time="8:44 PM" message="You created this channel on July 18th, 2017. This is the very beginning of the general channel. Description: This channel is for team-wide communication and announcements. All team members are in this channel" />
-                    <Message avatarSrc="https://github.com/shadcn.png" avatarFallback="CN" username="clogan202" time="8:44 PM" message="You created this channel on July 18th, 2017. This is the very beginning of the general channel. Description: This channel is for team-wide communication and announcements. All team members are in this channel" />
-                    <Message avatarSrc="https://github.com/shadcn.png" avatarFallback="CN" username="clogan202" time="8:44 PM" message="You created this channel on July 18th, 2017. This is the very beginning of the general channel. Description: This channel is for team-wide communication and announcements. All team members are in this channel" />
-                    <Message avatarSrc="https://github.com/shadcn.png" avatarFallback="CN" username="clogan202" time="8:44 PM" message="You created this channel on July 18th, 2017. This is the very beginning of the general channel. Description: This channel is for team-wide communication and announcements. All team members are in this channel" />
+                    {
+                        channel.messages.length
+                            ? channel.messages.map((message, i) =>
+                                <Message key={i} avatarSrc={message.avatarSrc} avatarFallback={message.username} username={message.username} time={message.date} message={message.message} />)
+                            : <p className="text-center text-gray-500">No messages yet</p>
+                    }
+
                 </div>
             </div>
             <div className="flex bg-white relative">
