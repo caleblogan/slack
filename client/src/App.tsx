@@ -2,17 +2,18 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import './App.css'
 import { UserContext } from './context';
-import { useState } from 'react';
-import { ApiUser } from '../../server/src/app';
+import { useEffect, useState } from 'react';
+import { ApiUser } from '../../server/src/models/UserModel';
 import Client from './pages/Client';
 import HomePage from './pages/HomePage';
 import DMsPage from './pages/DMsPage';
 import ActivityPage from './pages/ActivityPage';
 import LaterPage from './pages/LaterPage';
+import { getMe } from './api/api';
 
 const router = createBrowserRouter([
   {
-    path: "/client/:workspaceId",
+    path: "/client/:workspaceId?",
     element: <Client />,
     children: [
       {
@@ -36,18 +37,27 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  const [user] = useState<ApiUser | null>(null);
+  const [user, setUser] = useState<ApiUser | null>(null);
 
-  // useEffect(() => {
-  //   getMe()
-  //     .then((thisUser) => { setUser(thisUser); })
-  // }, [])
+  useEffect(() => {
+    loadUser()
+  }, [])
+
+  function loadUser() {
+    console.log("Loading user...")
+    getMe()
+      .then((thisUser) => { setUser(thisUser); })
+      .catch((err) => {
+        console.error("Failed to load user", err)
+        setUser(null)
+      })
+  }
 
   return (
     <>
-      <UserContext.Provider value={user}>
+      <UserContext.Provider value={{ user, reloadUser: loadUser }}>
         <RouterProvider router={router} />
-      </UserContext.Provider>
+      </UserContext.Provider >
     </>
   );
 }

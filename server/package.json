@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "Linktree server clone with llmm features",
+  "description": "Slack clone server",
   "scripts": {
     "dev": "npx tsx watch ./src/app.ts"
   },

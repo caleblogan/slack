@@ -8,14 +8,7 @@ import { envOnly } from "./middleware"
 import { config } from "./config"
 import authRouter from "./controllers/auth"
 import debugRouter from "./controllers/debug"
-
-export type ApiUser = UserModel
-export interface UserModel {
-    id: string
-    email: string
-    name: string
-    username: string
-}
+import { ApiUser } from "./models/UserModel"
 
 declare global {
     namespace Express {

@@ -3,17 +3,42 @@ import "./Client.css";
 import { Home, MessagesSquare, Bell, Bookmark, MoreHorizontal, Plus } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useContext } from "react";
+import { ApiUser } from "../../../server/src/app";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { UserContext } from "@/context";
 
 export default function Client() {
+    const { user } = useContext(UserContext)
+
     return (
         <div className="client">
             <Header />
+            <Login user={user} />
             <div className="content">
                 <Rail />
                 <Outlet />
             </div>
         </div>
     )
+}
+
+function Login({ user }: { user: ApiUser | null }) {
+    return <Dialog open={!user} onOpenChange={() => { }} >
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Please sign in</DialogTitle>
+                <DialogDescription>
+                    Please sign in to continue to your workspace
+                </DialogDescription>
+                <Button className="">Sign in with GitHub</Button>
+                <Separator />
+                <Button variant="outline">Sign in with Anon account</Button>
+            </DialogHeader>
+        </DialogContent>
+    </Dialog>
 }
 
 

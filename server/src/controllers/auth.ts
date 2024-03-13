@@ -6,7 +6,7 @@ import { GithubApi } from "../githubapi"
 import { asyncWrapper } from "../middleware"
 import { config } from "../config"
 import { randomInt } from "crypto"
-import { ApiUser } from "../app"
+import { ApiUser } from "../models/UserModel"
 
 const router = Router()
 
