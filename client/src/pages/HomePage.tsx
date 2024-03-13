@@ -5,7 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@radix-ui/react-collapsible"
 import { ChevronDown, ChevronRight, Filter, MailPlus, MessageCircleMore, Plus, Rocket, SendHorizonal, UserRoundPlus } from "lucide-react"
 import { useEffect, useState } from "react"
-import { Link, useNavigate, useParams, useLocation } from "react-router-dom"
+import { Link, useNavigate, useParams, useLocation, NavLink } from "react-router-dom"
 
 export default function HomePage() {
     const { channelId } = useParams()
@@ -19,12 +19,11 @@ export default function HomePage() {
     }, [])
 
     return <main>
-        <aside className="flex flex-col">
+        <aside className="flex flex-col text-gray-300">
             <div className="flex justify-between mb-4">
                 <Button variant="ghost" className="text-md mr-2"><b>boogl<ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
                 <div className="">
                     <Button variant="ghost" className="text-md p-2 mr-0"><b><Filter className="inline-block mt-[-2px]" size={16} /> </b></Button>
-
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild><Button variant="ghost" className="text-md p-2 mr-0"><b><MailPlus className="inline-block mt-[-2px]" size={16} /> </b></Button></TooltipTrigger>
@@ -35,20 +34,21 @@ export default function HomePage() {
                     </TooltipProvider>
                 </div>
             </div>
-            <Button variant="default" className="text-sm mb-4"><Rocket className="inline-block mr-2 " size={16} />Upgrade Plan</Button>
 
+            <Button variant="default" className="text-sm mb-4"><Rocket className="inline-block mr-2 " size={16} />Upgrade Plan</Button>
             <Button variant="ghost" className="text-sm justify-start"><MessageCircleMore className="inline-block mr-2" size={18} />Threads</Button>
             <Button variant="ghost" className="text-sm justify-start mb-6"><SendHorizonal className="inline-block mr-2" size={18} />Drafts & sent</Button>
+
             <SideDropdown trigger="Channels">
                 <ul>
-                    <Link to={(channelId ? "../" : "") + "aaaaaa"}><li><Button variant="ghost" className="ml-1 h-7 w-full justify-start"># general</Button></li></Link>
-                    <Link to={(channelId ? "../" : "") + "bbbbbb"}><li><Button variant="ghost" className="ml-1 h-7 w-full justify-start"># random</Button></li></Link>
+                    <ChannelLink channelId="aaaaaa" text="# general" selectedChannelId={channelId} />
+                    <ChannelLink channelId="bbbbbb" text="# random" selectedChannelId={channelId} />
                     <li><Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add channels</Button></li>
                 </ul>
             </SideDropdown>
             <SideDropdown trigger="Direct messages">
                 <ul>
-                    <li><Button variant="ghost" className="ml-1 h-7 w-full justify-start">clogan202</Button></li>
+                    <ChannelLink channelId="clogan202" text="clogan202" selectedChannelId={channelId} />
                     <li>
                         <Dialog>
                             <DialogTrigger asChild>
@@ -78,9 +78,9 @@ export default function HomePage() {
             </SideDropdown>
             <SideDropdown trigger="Apps" defaultOpen={false}>
                 <ul>
-                    <li><Button variant="ghost" className="ml-1 h-7 w-full justify-start">Slackbot</Button></li>
-                    <li><Button variant="ghost" className="ml-1 h-7 w-full justify-start">Pybot</Button></li>
-                    <li><Button variant="ghost" className="ml-1 h-7 w-full justify-start">rtfm</Button></li>
+                    <ChannelLink channelId="slackbot" text="Slackbot" selectedChannelId={channelId} />
+                    <ChannelLink channelId="pybot" text="Pybot" selectedChannelId={channelId} />
+                    <ChannelLink channelId="rtfm" text="rtfm" selectedChannelId={channelId} />
                 </ul>
             </SideDropdown>
 
@@ -138,4 +138,12 @@ function SideDropdown({ trigger, children, defaultOpen = true }: { trigger: Reac
             {children}
         </CollapsibleContent>
     </Collapsible>
+}
+
+function ChannelLink(props: { channelId: string, text: string, selectedChannelId?: string }) {
+    return <NavLink to={(props.selectedChannelId ? "../" : "") + props.channelId}>
+        {({ isActive }) => (
+            <li><Button variant="ghost" className={`pl-5 h-7 w-full justify-start ${isActive && "bg-[#5F2565]"}`}>{props.text}</Button></li>
+        )}
+    </NavLink>
 }
