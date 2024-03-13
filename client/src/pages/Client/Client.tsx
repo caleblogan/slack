@@ -4,19 +4,17 @@ import { Home, MessagesSquare, Bell, Bookmark, MoreHorizontal, Plus } from "luci
 import { NavLink, Outlet } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useContext } from "react";
-import { ApiUser } from "../../../server/src/app";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { UserContext } from "@/context";
+import { getGithubLogin, loginAnon } from "@/api/api";
 
 export default function Client() {
-    const { user } = useContext(UserContext)
-
     return (
         <div className="client">
             <Header />
-            <Login user={user} />
+            <Login />
             <div className="content">
                 <Rail />
                 <Outlet />
@@ -25,7 +23,17 @@ export default function Client() {
     )
 }
 
-function Login({ user }: { user: ApiUser | null }) {
+function Login() {
+    const { user, reloadUser } = useContext(UserContext)
+    async function handleGithubLogin() {
+        const url = await getGithubLogin()
+        window.location.assign(url)
+    }
+    async function handleAnonLogin() {
+        console.log("Anon login")
+        await loginAnon()
+        reloadUser()
+    }
     return <Dialog open={!user} onOpenChange={() => { }} >
         <DialogContent>
             <DialogHeader>
@@ -33,9 +41,9 @@ function Login({ user }: { user: ApiUser | null }) {
                 <DialogDescription>
                     Please sign in to continue to your workspace
                 </DialogDescription>
-                <Button className="">Sign in with GitHub</Button>
+                <Button className="" onClick={handleGithubLogin}>Sign in with GitHub</Button>
                 <Separator />
-                <Button variant="outline">Sign in with Anon account</Button>
+                <Button variant="outline" onClick={handleAnonLogin}>Sign in with Anon account</Button>
             </DialogHeader>
         </DialogContent>
     </Dialog>

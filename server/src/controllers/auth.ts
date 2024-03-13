@@ -74,6 +74,16 @@ router.get('/callback/github', asyncWrapper(async (req, res, next) => {
     res.redirect("http://localhost:5173")
 }));
 
+router.post('/login/anon', asyncWrapper(async (req, res, next) => {
+    const userQuery = await pool.query('SELECT * FROM users WHERE email = $1', ["anon@gmail.com"])
+    let user: ApiUser = userQuery.rows[0]
+    if (!user) {
+        throw new Error("Anon user not found")
+    }
+    req.session.user = user
+    res.json({ user })
+}))
+
 function generateSafeBase64(length: number) {
     const safeChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
     const result: string[] = []

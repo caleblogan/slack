@@ -4,8 +4,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@radix-ui/react-collapsible"
 import { ChevronDown, ChevronRight, Filter, MailPlus, MessageCircleMore, Plus, Rocket, SendHorizonal, UserRoundPlus } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams, useLocation, NavLink } from "react-router-dom"
+import { UserContext } from "@/context"
 
 type MessageModel = {
     avatarSrc: string,
@@ -77,6 +78,7 @@ export default function HomePage() {
     const { channelId } = useParams()
     const { pathname } = useLocation()
     const navigate = useNavigate()
+    const { user } = useContext(UserContext)
 
     const channel = channelId ? channels[channelId] : channels["aaaaaa"]
 
@@ -116,7 +118,7 @@ export default function HomePage() {
             </SideDropdown>
             <SideDropdown trigger="Direct messages">
                 <ul>
-                    <ChannelLink channelId="clogan202" text="clogan202" selectedChannelId={channelId} />
+                    {user && <ChannelLink channelId="clogan202" text={user.username} selectedChannelId={channelId} />}
                     <li>
                         <Dialog>
                             <DialogTrigger asChild>

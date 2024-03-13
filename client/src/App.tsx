@@ -4,14 +4,20 @@ import './App.css'
 import { UserContext } from './context';
 import { useEffect, useState } from 'react';
 import { ApiUser } from '../../server/src/models/UserModel';
-import Client from './pages/Client';
+import Client from './pages/Client/Client';
 import HomePage from './pages/HomePage';
 import DMsPage from './pages/DMsPage';
 import ActivityPage from './pages/ActivityPage';
 import LaterPage from './pages/LaterPage';
 import { getMe } from './api/api';
+import Redirect from './components/Redirect';
+
 
 const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Redirect to="/client/T6BEC06K1" />
+  },
   {
     path: "/client/:workspaceId?",
     element: <Client />,
