@@ -26,3 +26,10 @@ export function envOnly(mode: "dev" | "prod") {
     }
 }
 
+export function requireJSONHeader(req: Request, res: Response, next: Function) {
+    if (req.headers["content-type"] === "application/json") {
+        next()
+    } else {
+        res.status(400).json({ error: "content-type header not set to application/json" })
+    }
+}

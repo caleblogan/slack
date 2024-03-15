@@ -4,10 +4,11 @@ import expressSession from "express-session"
 import pgSession from "connect-pg-simple"
 
 import pool from "./db"
-import { envOnly } from "./middleware"
+import { envOnly, requireJSONHeader } from "./middleware"
 import { config } from "./config"
 import authRouter from "./controllers/auth"
 import debugRouter from "./controllers/debug"
+import workspacesRouter from "./controllers/workspaces"
 import { ApiUser } from "./models/UserModel"
 
 declare global {
@@ -31,6 +32,7 @@ const port = config.port
 const store = pgSession(expressSession)
 
 app.use(express.json())
+// app.use(requireJSONHeader)
 app.use(cors({ credentials: true, origin: true }));
 app.use(expressSession({
     store: new store({
@@ -43,6 +45,7 @@ app.use(expressSession({
 }));
 
 app.use('/auth', authRouter)
+app.use('/workspaces', workspacesRouter)
 app.use('/debug', envOnly("dev"), debugRouter)
 
 
