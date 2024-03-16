@@ -16,5 +16,34 @@ router.post('/', authMiddleware, asyncWrapper(async (req, res, next) => {
     res.json({ workspace })
 }))
 
+router.post('/:workspaceId/users', authMiddleware, asyncWrapper(async function addUser(req, res, next) {
+    const ownersId = req.session.user?.id!
+    const { user_id } = req.body
+    if (!user_id) {
+        res.status(400).json({ errors: [{ type: "validation", name: "userId", message: "userId is required" }] })
+    }
+
+    const workspace = await WorkspaceModel.addUser(ownersId, req.params.workspaceId, user_id)
+    res.json({ workspace })
+}))
+
+router.delete('/:workspaceId/users', authMiddleware, asyncWrapper(async function addUser(req, res, next) {
+    const ownersId = req.session.user?.id!
+    const { user_id } = req.body
+    if (!user_id) {
+        res.status(400).json({ errors: [{ type: "validation", name: "userId", message: "userId is required" }] })
+    }
+
+    const workspace = await WorkspaceModel.removeUser(ownersId, req.params.workspaceId, user_id)
+    res.json({ workspace })
+}))
+
+// list users
+router.get('/:workspaceId/users', authMiddleware, asyncWrapper(async function addUser(req, res, next) {
+    const userId = req.session.user?.id!
+    const users = await WorkspaceModel.listUsers(userId, req.params.workspaceId)
+    res.json({ users })
+}))
+
 
 export default router

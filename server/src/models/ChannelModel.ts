@@ -1,5 +1,12 @@
 import pool from '../db'
 import { generateUrlUUID } from '../uuids'
+import { authMemberOfWorkspace } from './WorspaceModel'
+
+interface ChannelsUsersModel {
+    channels_id: string
+    users_id: string
+    created_at: Date
+}
 
 export default class ChannelModel {
     public id: string
@@ -54,5 +61,42 @@ export default class ChannelModel {
              WHERE user_id=$1 AND id=$2 RETURNING *`,
             [userId, channelId, name, topic, description, isPrivate ?? false]) // TODO: Defaults/validation should be in one place
         return queryResult.rows[0] as ChannelModel
+    }
+
+    static async getChannel(channelId: string) {
+        const queryResult = await pool.query(
+            'SELECT * FROM channels WHERE id = $1',
+            [channelId])
+        return queryResult.rows[0] as ChannelModel | undefined
+    }
+
+    // TODO: user should be a member of workspace
+    static async addUser(userId: string, channelId: string, userIdToAdd: string) {
+        await authMemberOfChannel(channelId, userId)
+        const { workspace_id } = await this.getChannel(channelId) ?? {}
+        await authMemberOfWorkspace(workspace_id, userIdToAdd)
+        const query = await pool.query(
+            'INSERT INTO channels_users (channels_id, users_id) VALUES ($1, $2) RETURNING *',
+            [channelId, userIdToAdd])
+        return query.rows[0] as ChannelsUsersModel
+    }
+
+    static async listUsers(userId: string, channelId: string) {
+        await authMemberOfChannel(channelId, userId)
+        const query = await pool.query(
+            'SELECT * FROM channels_users JOIN users ON users.id = users_id WHERE channels_id = $1',
+            [channelId])
+        return query.rows as (ChannelsUsersModel & ChannelModel)[]
+    }
+
+}
+
+async function authMemberOfChannel(channelId: string, userId: string) {
+    const query = await pool.query(
+        'SELECT * FROM channels_users WHERE channels_id = $1 AND users_id = $2',
+        [channelId, userId]
+    )
+    if (query.rowCount === 0) {
+        throw new Error('Unauthorized')
     }
 }

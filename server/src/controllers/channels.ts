@@ -52,4 +52,23 @@ router.put('/:channelId', authMiddleware, asyncWrapper(async (req, res, next) =>
     res.json({ channel })
 }))
 
+router.post('/:channelId/users', authMiddleware, asyncWrapper(async (req, res, next) => {
+    const userId = req.session.user?.id!
+    const { user_id: idToAdd } = req.body
+    if (!idToAdd) {
+        const errors = []
+        if (!idToAdd) errors.push({ type: "validation", name: "userId", message: "userId is required" })
+        res.status(400).json({ errors })
+        return
+    }
+    const channel = await ChannelModel.addUser(userId, req.params.channelId, idToAdd);
+    res.json({ channel })
+}))
+
+router.get('/:channelId/users', authMiddleware, asyncWrapper(async (req, res, next) => {
+    const userId = req.session.user?.id!
+    const users = await ChannelModel.listUsers(userId, req.params.channelId);
+    res.json({ users })
+}))
+
 export default router

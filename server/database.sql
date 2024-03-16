@@ -34,23 +34,21 @@ CREATE TABLE IF NOT EXISTS Messages(
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS Workspaces_Users (
+  workspaces_id VARCHAR(36) REFERENCES Workspaces(id) ON DELETE CASCADE,
+  users_id VARCHAR(36) REFERENCES Users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  Primary Key (workspaces_id, users_id)
+);
+CREATE INDEX "idx_workspaces_users_workspaces_id" ON workspaces_users(workspaces_id);
+CREATE INDEX "idx_workspaces_users_users_id" ON workspaces_users(users_id);
 
--- CREATE TABLE IF NOT EXISTS Pages (
---     id VARCHAR(36) PRIMARY KEY,
---     user_id VARCHAR(36) REFERENCES Users(id) ON DELETE CASCADE,
---     bio TEXT,
---     backgroung_color TEXT,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
-
--- CREATE TABLE IF NOT EXISTS Links (
---   id VARCHAR(36) PRIMARY KEY,
---   page_id VARCHAR(36) REFERENCES Pages(id) ON DELETE CASCADE,
---   name TEXT,
---   url TEXT,
---   active BOOLEAN DEFAULT TRUE
--- );
+CREATE TABLE IF NOT EXISTS Channels_Users (
+  channels_id VARCHAR(36) REFERENCES Channels(id) ON DELETE CASCADE,
+  users_id VARCHAR(36) REFERENCES Users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  Primary Key (channels_id, users_id)
+);
 
 /* PG Session Middleware */
 CREATE TABLE "session" (
