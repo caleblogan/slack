@@ -9,6 +9,7 @@ import { config } from "./config"
 import authRouter from "./controllers/auth"
 import debugRouter from "./controllers/debug"
 import workspacesRouter from "./controllers/workspaces"
+import channelsRouter from "./controllers/channels"
 import { ApiUser } from "./models/UserModel"
 
 declare global {
@@ -46,6 +47,7 @@ app.use(expressSession({
 
 app.use('/auth', authRouter)
 app.use('/workspaces', workspacesRouter)
+app.use('/channels', channelsRouter)
 app.use('/debug', envOnly("dev"), debugRouter)
 
 
