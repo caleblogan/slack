@@ -39,4 +39,20 @@ export default class ChannelModel {
         console.log(queryResult.rows)
         return queryResult.rows.map((row: any) => new ChannelModel(row))
     }
+
+    static async delete(userId: string, channelId: string) {
+        const queryResult = await pool.query(
+            'DELETE FROM channels WHERE user_id=$1 AND id=$2 RETURNING *',
+            [userId, channelId])
+        return queryResult.rows[0] as ChannelModel
+    }
+
+    static async update(userId: string, channelId: string, name: string, topic: string, description: string, isPrivate: boolean) {
+        const queryResult = await pool.query(
+            `UPDATE channels 
+            set name=$3, topic=$4, description=$5, is_private=$6
+             WHERE user_id=$1 AND id=$2 RETURNING *`,
+            [userId, channelId, name, topic, description, isPrivate ?? false]) // TODO: Defaults/validation should be in one place
+        return queryResult.rows[0] as ChannelModel
+    }
 }

@@ -10,6 +10,7 @@ import authRouter from "./controllers/auth"
 import debugRouter from "./controllers/debug"
 import workspacesRouter from "./controllers/workspaces"
 import channelsRouter from "./controllers/channels"
+import messagesRouter from "./controllers/messages"
 import { ApiUser } from "./models/UserModel"
 
 declare global {
@@ -48,6 +49,7 @@ app.use(expressSession({
 app.use('/auth', authRouter)
 app.use('/workspaces', workspacesRouter)
 app.use('/channels', channelsRouter)
+app.use('/messages', messagesRouter)
 app.use('/debug', envOnly("dev"), debugRouter)
 
 

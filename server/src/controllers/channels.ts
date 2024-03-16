@@ -20,17 +20,36 @@ router.post('/', authMiddleware, asyncWrapper(async (req, res, next) => {
     res.json({ channel })
 }))
 
-
 router.get('/', authMiddleware, asyncWrapper(async (req, res, next) => {
     const userId = req.session.user?.id!
     const { workspaceId } = req.query
-    console.log("workspaceId: ", workspaceId)
     if (!workspaceId || typeof workspaceId !== "string") {
         res.status(400).json({ errors: [{ type: "validation", name: "workspaceId", message: "workspaceId query parameter is required" }] })
         return
     }
     const channels = await ChannelModel.list(userId, workspaceId);
     res.json({ channels })
+}))
+
+router.delete('/:channelId', authMiddleware, asyncWrapper(async (req, res, next) => {
+    const userId = req.session.user?.id!
+    const { channelId } = req.params
+    const channel = await ChannelModel.delete(userId, channelId);
+    res.json({ channel })
+}))
+
+router.put('/:channelId', authMiddleware, asyncWrapper(async (req, res, next) => {
+    const userId = req.session.user?.id!
+    const { name, topic, description, is_private } = req.body
+    const { channelId } = req.params
+    if (!name) {
+        const errors = []
+        if (!name) errors.push({ type: "validation", name: "name", message: "name is required" })
+        res.status(400).json({ errors })
+        return
+    }
+    const channel = await ChannelModel.update(userId, channelId, name, topic, description, is_private);
+    res.json({ channel })
 }))
 
 export default router
