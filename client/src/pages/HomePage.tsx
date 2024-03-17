@@ -27,23 +27,19 @@ export default function HomePage() {
     const [messages, setMessages] = useState<(MessageModel & UserModel)[]>([])
 
     const channel = channels.find(c => c.id === channelId)
-    console.log("WORKSPACE", workspaceId)
-    console.log("Channel", channelId)
 
     useEffect(() => {
         if (!channelId && channels.length > 0) {
             navigate(`${pathname}/${channels[0].id}`)
         }
-    }, [channels])
+    }, [channelId, channels])
 
     useEffect(() => {
         if (!workspaceId) return
         listChannels(workspaceId).then(channels => {
-            console.log("CHANNELS OBJ", channels)
             setChannels(channels)
         })
         getWorkpace(workspaceId).then(workspace => {
-            console.log("WORKSPACE OBJ", workspace)
             setWorkspace(workspace)
         })
     }, [workspaceId])
@@ -55,102 +51,126 @@ export default function HomePage() {
     function loadMessages() {
         if (!channelId) return
         listMessages(channelId).then(messages => {
-            console.log("MESSAGES OBJ", messages)
             setMessages(messages)
         })
     }
 
     return <main>
-        <aside className="flex flex-col text-gray-300">
-            <div className="flex justify-between mb-4">
-                <Button variant="ghost" className="text-md mr-2"><b>{workspace?.name}<ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
-                <div className="">
-                    <Button variant="ghost" className="text-md p-2 mr-0"><b><Filter className="inline-block mt-[-2px]" size={16} /> </b></Button>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild><Button variant="ghost" className="text-md p-2 mr-0"><b><MailPlus className="inline-block mt-[-2px]" size={16} /> </b></Button></TooltipTrigger>
-                            <TooltipContent className="">
-                                <p className="">new message</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </div>
-            </div>
-
-            <Button variant="default" className="text-sm mb-4"><Rocket className="inline-block mr-2 " size={16} />Upgrade Plan</Button>
-            <Button variant="ghost" className="text-sm justify-start"><MessageCircleMore className="inline-block mr-2" size={18} />Threads</Button>
-            <Button variant="ghost" className="text-sm justify-start mb-6"><SendHorizonal className="inline-block mr-2" size={18} />Drafts & sent</Button>
-
-            <SideDropdown trigger="Channels">
-                <ul>
-                    {channels.map(channel => <ChannelLink key={channel.id} channel={channel} selectedChannelId={channelId} />)}
-                    <li><Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add channels</Button></li>
-                </ul>
-            </SideDropdown>
-            <SideDropdown trigger="Direct messages">
-                <ul>
-                    {user && <ChannelLink channel={{ id: "clogan202", name: "clogan202" } as any} selectedChannelId={channelId} />}
-                    <li>
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add coworkers</Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Invite people to Boogl</DialogTitle>
-                                </DialogHeader>
-                                <form onSubmit={e => e.preventDefault()}>
-                                    <div className="flex flex-col">
-                                        <label>To:</label>
-                                        <input type="email" className="w-full h-23 border border-solid rounded-md p-2" placeholder="name@example.com" />
-                                        <DialogClose asChild>
-                                            <div className="flex justify-end">
-                                                <Button onClick={() => {
-                                                    console.log("sending")
-                                                }} variant="success" className="mt-3">Submit</Button>
-                                            </div>
-                                        </DialogClose>
-                                    </div>
-                                </form>
-                            </DialogContent>
-                        </Dialog>
-                    </li>
-                </ul>
-            </SideDropdown>
-            <SideDropdown trigger="Apps" defaultOpen={false}>
-                <ul>
-                    <ChannelLink channel={{ id: "slackbot", name: "Slackbot" } as any} selectedChannelId={channelId} />
-                    <ChannelLink channel={{ id: "pybot", name: "Pybot" } as any} selectedChannelId={channelId} />
-                    <ChannelLink channel={{ id: "rtfm", name: "Rtfm" } as any} selectedChannelId={channelId} />
-                </ul>
-            </SideDropdown>
-
-        </aside>
-
-        {channel &&
-            <div className="workspace text-gray-900 h-max flex flex-col">
-                <div className="border-b border-solid p-3">
-                    <Button variant="ghost" className="text-md mr-2"><b># {channel.name}<ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
-                    <span className="text-sm font-thin text-gray-500">{channel.topic}</span>
-                </div>
-                <div className="flex-1 relative overflow-auto">
-                    <div className="border-b border-solid p-6">
-                        <h2 className="mt-10 text-2xl mb-2"><b># {channel.name}</b></h2>
-                        <p>{channel.description} (edit)</p>
-                        <Button variant="outline" className="mt-4"><UserRoundPlus size={14} className="mr-2" />Add coworkers</Button>
-                    </div>
-                    <div className="message-container p-6 relative">
-                        {
-                            messages?.length
-                                ? messages.map((message, i) => <Message key={i} message={message} />)
-                                : <p className="text-center text-gray-500">No messages yet</p>
-                        }
-                    </div>
-                </div>
-                <NewMessageBox channel={channel} onAdd={() => loadMessages()} />
-            </div>
-        }
+        <Sidebar
+            channels={channels}
+            user={user}
+            workspace={workspace}
+            currentChannelId={channelId}
+        />
+        <MainContent channel={channel} messages={messages} loadMessages={loadMessages} />
     </main>
+}
+
+type SidebarProps = {
+    user: UserModel | null, workspace: WorkspaceModel | null, channels: ChannelModel[], currentChannelId?: string
+}
+function Sidebar({ user, workspace, channels, currentChannelId }: SidebarProps) {
+    return <aside className="flex flex-col text-gray-300">
+        <div className="flex justify-between mb-4">
+            <Button variant="ghost" className="text-md mr-2"><b>{workspace?.name}<ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
+            <div className="">
+                <Button variant="ghost" className="text-md p-2 mr-0"><b><Filter className="inline-block mt-[-2px]" size={16} /> </b></Button>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild><Button variant="ghost" className="text-md p-2 mr-0"><b><MailPlus className="inline-block mt-[-2px]" size={16} /> </b></Button></TooltipTrigger>
+                        <TooltipContent className="">
+                            <p className="">new message</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            </div>
+        </div>
+
+        <Button variant="default" className="text-sm mb-4"><Rocket className="inline-block mr-2 " size={16} />Upgrade Plan</Button>
+        <Button variant="ghost" className="text-sm justify-start"><MessageCircleMore className="inline-block mr-2" size={18} />Threads</Button>
+        <Button variant="ghost" className="text-sm justify-start mb-6"><SendHorizonal className="inline-block mr-2" size={18} />Drafts & sent</Button>
+
+        <SideDropdown trigger="Channels">
+            <ul>
+                {channels.map(channel => <ChannelLink key={channel.id} channel={channel} selectedChannelId={currentChannelId} />)}
+                <li><Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add channels</Button></li>
+            </ul>
+        </SideDropdown>
+        <SideDropdown trigger="Direct messages">
+            <ul>
+                {user && <ChannelLink channel={{ id: "clogan202", name: "clogan202" } as any} selectedChannelId={currentChannelId} />}
+                <li>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add coworkers</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Invite people to Boogl</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={e => e.preventDefault()}>
+                                <div className="flex flex-col">
+                                    <label>To:</label>
+                                    <input type="email" className="w-full h-23 border border-solid rounded-md p-2" placeholder="name@example.com" />
+                                    <DialogClose asChild>
+                                        <div className="flex justify-end">
+                                            <Button onClick={() => {
+                                                console.log("sending")
+                                            }} variant="success" className="mt-3">Submit</Button>
+                                        </div>
+                                    </DialogClose>
+                                </div>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                </li>
+            </ul>
+        </SideDropdown>
+        <SideDropdown trigger="Apps" defaultOpen={false}>
+            <ul>
+                <ChannelLink channel={{ id: "slackbot", name: "Slackbot" } as any} selectedChannelId={currentChannelId} />
+                <ChannelLink channel={{ id: "pybot", name: "Pybot" } as any} selectedChannelId={currentChannelId} />
+                <ChannelLink channel={{ id: "rtfm", name: "Rtfm" } as any} selectedChannelId={currentChannelId} />
+            </ul>
+        </SideDropdown>
+
+    </aside>
+}
+
+type MainContentProps = {
+    channel?: ChannelModel, messages: (MessageModel & UserModel)[], loadMessages: () => void
+}
+function MainContent({ channel, messages, loadMessages }: MainContentProps) {
+    const messageContaineRef = useRef<HTMLDivElement | null>(null)
+    if (!channel) { return null }
+    useEffect(() => {
+        messageContaineRef.current?.scrollTo({ top: messageContaineRef.current?.scrollHeight, behavior: "smooth" })
+    }, [channel, messages])
+
+    return <div className="workspace text-gray-900 h-max flex flex-col">
+        <div className="border-b border-solid p-3">
+            <Button variant="ghost" className="text-md mr-2"><b># {channel.name}<ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
+            <span className="text-sm font-thin text-gray-500">{channel.topic}</span>
+        </div>
+        <div className="flex-1 relative overflow-auto" ref={messageContaineRef}>
+            <div className="border-b border-solid p-6">
+                <h2 className="mt-10 text-2xl mb-2"><b># {channel.name}</b></h2>
+                <p>{channel.description} (edit)</p>
+                <Button variant="outline" className="mt-4"><UserRoundPlus size={14} className="mr-2" />Add coworkers</Button>
+            </div>
+            <div className="message-container p-6 relative" >
+                {
+                    messages?.length
+                        ? messages.map((message, i) => <Message key={i} message={message} />)
+                        : <p className="text-center text-gray-500">No messages yet</p>
+                }
+            </div>
+        </div>
+        <NewMessageBox channel={channel} onAdd={() => {
+            loadMessages()
+            // messageContaineRef.current?.scrollTo(0, messageContaineRef.current?.scrollHeight)
+        }} />
+    </div>
 }
 
 function NewMessageBox({ channel, onAdd }: { channel?: ChannelModel, onAdd: (message: string) => void }) {
