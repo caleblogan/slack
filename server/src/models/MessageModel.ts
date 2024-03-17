@@ -6,8 +6,8 @@ export default class MessageModel {
     public text: string
     public user_id: string
     public channel_id: string
-    public created_at: Date
-    public updated_at: Date
+    public created_at: string
+    public updated_at: string
     constructor(
         props: MessageModel
     ) {

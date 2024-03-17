@@ -71,4 +71,10 @@ router.get('/:channelId/users', authMiddleware, asyncWrapper(async (req, res, ne
     res.json({ users })
 }))
 
+router.get('/:channelId/messages', authMiddleware, asyncWrapper(async (req, res, next) => {
+    const userId = req.session.user?.id!
+    const messages = await ChannelModel.listMessages(userId, req.params.channelId);
+    res.json({ messages })
+}))
+
 export default router

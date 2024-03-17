@@ -21,11 +21,13 @@ export class UserModel {
     email: string
     name: string
     username: string
-    constructor(id: string, email: string, name: string, username: string) {
+    avatar_url?: string
+    constructor(id: string, email: string, name: string, username: string, avatar_url?: string) {
         this.id = id
         this.email = email
         this.name = name
         this.username = username
+        this.avatar_url = avatar_url
     }
     static async listWorkspaces(userId: string) {
         const queryResult = await pool.query(

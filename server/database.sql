@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS Messages(
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX "idx_messages_channel_id" ON messages(channel_id);
 
 CREATE TABLE IF NOT EXISTS Workspaces_Users (
   workspaces_id VARCHAR(36) REFERENCES Workspaces(id) ON DELETE CASCADE,

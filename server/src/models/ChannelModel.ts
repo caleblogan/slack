@@ -1,5 +1,6 @@
 import pool from '../db'
 import { generateUrlUUID } from '../uuids'
+import MessageModel from './MessageModel'
 import { authMemberOfWorkspace } from './WorspaceModel'
 
 interface ChannelsUsersModel {
@@ -87,7 +88,13 @@ export default class ChannelModel {
             [channelId])
         return query.rows as (ChannelsUsersModel & ChannelModel)[]
     }
-
+    static async listMessages(userId: string, channelId: string) {
+        await authMemberOfChannel(channelId, userId)
+        const query = await pool.query(
+            'SELECT * FROM messages JOIN users ON messages.user_id=users.id WHERE channel_id = $1',
+            [channelId])
+        return query.rows as MessageModel[]
+    }
 }
 
 async function authMemberOfChannel(channelId: string, userId: string) {
