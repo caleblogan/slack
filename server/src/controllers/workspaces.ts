@@ -12,7 +12,9 @@ router.post('/', authMiddleware, asyncWrapper(async (req, res, next) => {
         res.status(400).json({ errors: [{ type: "validation", name: "name", message: "name is required" }] })
     }
 
+    // TODO: this should be a transaction
     const workspace = await WorkspaceModel.create(userId, name)
+    await WorkspaceModel.addUser(userId, workspace.id, userId)
     res.json({ workspace })
 }))
 
