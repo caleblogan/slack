@@ -16,6 +16,14 @@ export default class WorkspaceModel {
         return new WorkspaceModel(workspaceRaw.id, workspaceRaw.name, workspaceRaw.user_id)
     }
 
+    static async get(userId: string, workspaceId: string) {
+        await authMemberOfWorkspace(workspaceId, userId)
+        const queryResult = await pool.query(
+            'SELECT * FROM workspaces WHERE id = $1',
+            [workspaceId])
+        return queryResult.rows[0] as WorkspaceModel
+    }
+
     static async addUser(ownersId: string, workspaceId: string, userId: string) {
         await authOwnsWorkspace(workspaceId, ownersId)
         const queryResult = await pool.query(

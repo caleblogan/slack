@@ -70,7 +70,6 @@ export default class ChannelModel {
         return queryResult.rows[0] as ChannelModel | undefined
     }
 
-    // TODO: user should be a member of workspace
     static async addUser(userId: string, channelId: string, userIdToAdd: string) {
         await authMemberOfChannel(channelId, userId)
         const { workspace_id } = await this.getChannel(channelId) ?? {}

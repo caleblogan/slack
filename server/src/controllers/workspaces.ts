@@ -16,6 +16,12 @@ router.post('/', authMiddleware, asyncWrapper(async (req, res, next) => {
     res.json({ workspace })
 }))
 
+router.get('/:workspaceId', authMiddleware, asyncWrapper(async (req, res, next) => {
+    const userId = req.session.user?.id!
+    const workspace = await WorkspaceModel.get(userId, req.params.workspaceId)
+    res.json({ workspace })
+}))
+
 router.post('/:workspaceId/users', authMiddleware, asyncWrapper(async function addUser(req, res, next) {
     const ownersId = req.session.user?.id!
     const { user_id } = req.body

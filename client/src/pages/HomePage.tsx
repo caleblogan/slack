@@ -7,91 +7,46 @@ import { ChevronDown, ChevronRight, Filter, MailPlus, MessageCircleMore, Plus, R
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams, useLocation, NavLink } from "react-router-dom"
 import { UserContext } from "@/context"
+import ChannelModel from "../../../server/src/models/ChannelModel"
+import { listChannels } from "@/api/users"
+import WorkspaceModel from "../../../server/src/models/WorspaceModel"
+import { getWorkpace } from "@/api/workspaces"
 
-type MessageModel = {
-    avatarSrc: string,
-    username: string,
-    date: string,
-    message: string
-}
-
-type ChannelModel = {
-    [id: string]: {
-        id: string,
-        name: string,
-        description: string
-        topic: string,
-        messages: MessageModel[]
-    }
-}
-const channels: ChannelModel = {
-    aaaaaa: {
-        id: "aaaaaa",
-        name: "general",
-        topic: "Company-wide announcements and work-based matters",
-        description: "You created this channel on July 18th, 2017. This is the very beginning of the general channel. Description: This channel is for team-wide communication and announcements. All team members are in this channel.",
-        messages: Array(4).fill(null).map(() => ({
-            avatarSrc: "https://github.com/shadcn.png",
-            username: "clogan202",
-            date: "8:44 PM",
-            message: "You created this channel on July 18th, 2017. This is the very beginning of the general channel. Description: This channel is for team-wide communication and announcements. All team members are in this channel."
-        }))
-    },
-    bbbbbb: {
-        id: "bbbbbb",
-        name: "random",
-        topic: "Non-work banter and water cooler conversation",
-        description: "Non-work banter and water cooler conversation",
-        messages: []
-    },
-    clogan202: {
-        id: "clogan202",
-        name: "clogan202",
-        topic: "Direct messages",
-        description: "Direct messages",
-        messages: []
-    },
-    slackbot: {
-        id: "slackbot",
-        name: "slackbot",
-        topic: "Slackbot!!!!!",
-        description: "Do your bidding",
-        messages: []
-    },
-    pybot: {
-        id: "pybot",
-        name: "pybot",
-        topic: "Python bot",
-        description: "Python bot",
-        messages: []
-    },
-    rtfm: {
-        id: "rtfm",
-        name: "rtfm",
-        topic: "Read the **** manual",
-        description: "Read the **** manual",
-        messages: []
-    }
-}
 
 export default function HomePage() {
-    const { channelId } = useParams()
+    const { channelId, workspaceId } = useParams()
     const { pathname } = useLocation()
     const navigate = useNavigate()
     const { user } = useContext(UserContext)
+    const [channels, setChannels] = useState<ChannelModel[]>([])
+    const [workspace, setWorkspace] = useState<WorkspaceModel | null>(null)
 
-    const channel = channelId ? channels[channelId] : channels["aaaaaa"]
+    const channel = channels.find(c => c.id === channelId)
+    console.log("WORKSPACE", workspaceId)
+    console.log("Channel", channelId)
+
+    // useEffect(() => {
+    //     if (!channelId) {
+    //         navigate(`${pathname}/aaaaaa`)
+    //     }
+    // }, [])
 
     useEffect(() => {
-        if (!channelId) {
-            navigate(`${pathname}/aaaaaa`)
-        }
-    }, [])
+        if (!workspaceId) return
+        listChannels(workspaceId).then(channels => {
+            console.log("CHANNELS OBJ", channels)
+            setChannels(channels)
+        })
+        getWorkpace(workspaceId).then(workspace => {
+            console.log("WORKSPACE OBJ", workspace)
+            setWorkspace(workspace)
+        })
+    }, [workspaceId])
 
     return <main>
         <aside className="flex flex-col text-gray-300">
             <div className="flex justify-between mb-4">
-                <Button variant="ghost" className="text-md mr-2"><b>boogl<ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
+                <Button variant="ghost" className="text-md mr-2"><b>{workspace?.name}<ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
                 <div className="">
                     <Button variant="ghost" className="text-md p-2 mr-0"><b><Filter className="inline-block mt-[-2px]" size={16} /> </b></Button>
                     <TooltipProvider>
@@ -111,14 +66,13 @@ export default function HomePage() {
 
             <SideDropdown trigger="Channels">
                 <ul>
-                    <ChannelLink channelId="aaaaaa" text="# general" selectedChannelId={channelId} />
-                    <ChannelLink channelId="bbbbbb" text="# random" selectedChannelId={channelId} />
+                    {channels.map(channel => <ChannelLink key={channel.id} channel={channel} selectedChannelId={channelId} />)}
                     <li><Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add channels</Button></li>
                 </ul>
             </SideDropdown>
             <SideDropdown trigger="Direct messages">
                 <ul>
-                    {user && <ChannelLink channelId="clogan202" text={user.username} selectedChannelId={channelId} />}
+                    {/* {user && <ChannelLink channelId="clogan202" text={user.username} selectedChannelId={channelId} />} */}
                     <li>
                         <Dialog>
                             <DialogTrigger asChild>
@@ -148,15 +102,15 @@ export default function HomePage() {
             </SideDropdown>
             <SideDropdown trigger="Apps" defaultOpen={false}>
                 <ul>
-                    <ChannelLink channelId="slackbot" text="Slackbot" selectedChannelId={channelId} />
+                    {/* <ChannelLink channelId="slackbot" text="Slackbot" selectedChannelId={channelId} />
                     <ChannelLink channelId="pybot" text="Pybot" selectedChannelId={channelId} />
-                    <ChannelLink channelId="rtfm" text="rtfm" selectedChannelId={channelId} />
+                    <ChannelLink channelId="rtfm" text="rtfm" selectedChannelId={channelId} /> */}
                 </ul>
             </SideDropdown>
 
         </aside>
 
-        <div className="workspace text-gray-900 h-max flex flex-col">
+        {/* <div className="workspace text-gray-900 h-max flex flex-col">
             <div className="border-b border-solid p-3">
                 <Button variant="ghost" className="text-md mr-2"><b># {channel.name}<ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
                 <span className="text-sm font-thin text-gray-500">{channel.topic}</span>
@@ -180,7 +134,7 @@ export default function HomePage() {
             <div className="flex bg-white relative">
                 <textarea className="flex-grow h-36 p-2 m-4 border rounded-md border-solid resize-none" placeholder="Message #general"></textarea>
             </div>
-        </div>
+        </div> */}
     </main>
 }
 
@@ -211,10 +165,10 @@ function SideDropdown({ trigger, children, defaultOpen = true }: { trigger: Reac
     </Collapsible>
 }
 
-function ChannelLink(props: { channelId: string, text: string, selectedChannelId?: string }) {
-    return <NavLink to={(props.selectedChannelId ? "../" : "") + props.channelId}>
+function ChannelLink(props: { channel: ChannelModel, selectedChannelId?: string }) {
+    return <NavLink to={(props.selectedChannelId ? "../" : "") + props.channel.id}>
         {({ isActive }) => (
-            <li><Button variant="ghost" className={`pl-5 h-7 w-full justify-start ${isActive && "bg-[#5F2565]"}`}>{props.text}</Button></li>
+            <li><Button variant="ghost" className={`pl-5 h-7 w-full justify-start ${isActive && "bg-[#5F2565]"}`}>{props.channel.name}</Button></li>
         )}
     </NavLink>
 }

@@ -3,7 +3,7 @@ import "./Header.css"
 import { Search } from "lucide-react"
 import { UserContext } from "@/context"
 import { Button } from "../ui/button"
-import { logout } from "@/api/api"
+import { logout } from "@/api/users"
 
 const placeHolder = "Search"
 export default function Header() {

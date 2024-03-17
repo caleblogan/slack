@@ -11,6 +11,7 @@ import debugRouter from "./controllers/debug"
 import workspacesRouter from "./controllers/workspaces"
 import channelsRouter from "./controllers/channels"
 import messagesRouter from "./controllers/messages"
+import usersRouter from "./controllers/users"
 import { ApiUser } from "./models/UserModel"
 
 declare global {
@@ -50,6 +51,7 @@ app.use('/auth', authRouter)
 app.use('/workspaces', workspacesRouter)
 app.use('/channels', channelsRouter)
 app.use('/messages', messagesRouter)
+app.use('/users', usersRouter)
 app.use('/debug', envOnly("dev"), debugRouter)
 
 

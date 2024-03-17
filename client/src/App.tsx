@@ -9,7 +9,7 @@ import HomePage from './pages/HomePage';
 import DMsPage from './pages/DMsPage';
 import ActivityPage from './pages/ActivityPage';
 import LaterPage from './pages/LaterPage';
-import { getMe } from './api/api';
+import { getMe } from './api/users';
 import Redirect from './components/Redirect';
 
 

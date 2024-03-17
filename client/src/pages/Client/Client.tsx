@@ -1,14 +1,16 @@
 import Header from "@/components/Header/Header";
 import "./Client.css";
 import { Home, MessagesSquare, Bell, Bookmark, MoreHorizontal, Plus } from "lucide-react";
-import { NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { UserContext } from "@/context";
-import { getGithubLogin, loginAnon } from "@/api/api";
+import { getGithubLogin, loginAnon } from "@/api/users";
+import WorkspaceModel from "../../../../server/src/models/WorspaceModel";
+import { listWorkspaces } from "@/api/workspaces";
 
 export default function Client() {
     return (
@@ -51,9 +53,18 @@ function Login() {
 
 
 function Rail() {
+    const [workspaces, setWorkspaces] = useState<WorkspaceModel[]>([])
+    useEffect(() => {
+        listWorkspaces()
+            .then(data => {
+                console.log(data)
+                setWorkspaces(data)
+            })
+    }, [])
+
     return <div className="rail">
         <div className="flex flex-col">
-            <WorkspaceLink name="B" />
+            <WorkspaceLink workspaces={workspaces} />
             <RailLink to="" icon={<Home size={20} className="block m-auto" />} name="Home" end />
             <RailLink to="dms" icon={<MessagesSquare size={20} className="block m-auto" />} name="DMs" />
             <RailLink to="activity" icon={<Bell size={20} className="block m-auto" />} name="Activity" />
@@ -83,21 +94,29 @@ function RailLink({ to, icon, name, end }: { to: string, icon: React.JSX.Element
     </div>
 }
 
-function WorkspaceLink({ name }: { name: string }) {
+// TODO: use url to get active link
+function WorkspaceLink({ workspaces }: { workspaces: WorkspaceModel[] }) {
+    if (!workspaces.length) return null
     return <DropdownMenu>
         <DropdownMenuTrigger asChild>
             <button className={`text-xl mb-3 bg-gray-500 hover:bg-opacity-35 rounded-md w-[36px] h-[36px]`}>
-                {name}
+                {workspaces[0]?.name[0].toUpperCase()}
             </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="ml-2 min-w-[300px]">
-            <DropdownMenuItem className="flex flex-col items-start cursor-pointer">
-                <h3>Boogl</h3>
-                <p className="text-gray-600">juggle-hq.slack.com</p>
-            </DropdownMenuItem>
+            {
+                workspaces.map(workspace => (
+                    <Link to={`/client/${workspace.id}`} key={workspace.id}>
+                        <DropdownMenuItem className="flex flex-col items-start cursor-pointer">
+                            <h3>{workspace.name}</h3>
+                            <p className="text-gray-600">{workspace.id}</p>
+                        </DropdownMenuItem>
+                    </Link>
+                ))
+            }
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-md text-gray-500 cursor-pointer">
-                <Plus size={24} className="mr-4" /> Add a workspace
+                <Plus size={24} className="mr-4" /> Create a workspace
             </DropdownMenuItem>
         </DropdownMenuContent>
     </DropdownMenu>

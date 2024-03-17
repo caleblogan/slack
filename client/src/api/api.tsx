@@ -1,42 +1,27 @@
-import { ApiUser } from "../../../server/src/models/UserModel"
+export default class Api {
+    static BASE_URL = "http://localhost:3000"
+    static async fetch(endpoint: string, options: RequestInit = {}) {
+        endpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`
+        const response = await fetch(`${Api.BASE_URL}${endpoint}`, {
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            ...options
+        })
+        return await response.json()
+    }
 
-const BASE_URL = "http://localhost:3000"
-
-export async function getMe(): Promise<ApiUser | null> {
-    const response = await fetch(`${BASE_URL}/auth/me`, {
-        method: "GET",
-        credentials: "include"
-    })
-    const data = await response.json()
-    return data?.user
-}
-
-export async function getUsers(): Promise<ApiUser[]> {
-    const response = await fetch(`${BASE_URL}/users`, {
-        method: "GET",
-        credentials: "include"
-    })
-    const data = await response.json()
-    return data?.users ?? []
-}
-
-export async function getGithubLogin(): Promise<string> {
-    const response = await fetch(`${BASE_URL}/auth/login/github`)
-    return (await response.json()).url
-}
-
-export async function logout(): Promise<{ message: string }> {
-    const response = await fetch(`${BASE_URL}/auth/logout`, {
-        method: "GET",
-        credentials: "include"
-    })
-    return await response.json()
-}
-
-export async function loginAnon(): Promise<ApiUser> {
-    const response = await fetch(`${BASE_URL}/auth/login/anon`, {
-        method: "POST",
-        credentials: "include"
-    })
-    return await response.json()
+    static async get(endpoint: string, options?: RequestInit) {
+        return await Api.fetch(endpoint, { ...options, method: "GET" })
+    }
+    static async post(endpoint: string, options?: RequestInit) {
+        return await Api.fetch(endpoint, { ...options, method: "POST" })
+    }
+    static async put(endpoint: string, options?: RequestInit) {
+        return await Api.fetch(endpoint, { ...options, method: "PUT" })
+    }
+    static async delete(endpoint: string, options?: RequestInit) {
+        return await Api.fetch(endpoint, { ...options, method: "DELETE" })
+    }
 }
