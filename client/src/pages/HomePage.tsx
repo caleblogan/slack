@@ -12,9 +12,10 @@ import { listChannels } from "@/api/users"
 import WorkspaceModel from "../../../server/src/models/WorspaceModel"
 import MessageModel from "../../../server/src/models/MessageModel"
 import { getWorkpace } from "@/api/workspaces"
-import { listMessages } from "@/api/channels"
+import { ChannelApi, listMessages } from "@/api/channels"
 import { UserModel } from "../../../server/src/models/UserModel"
 import { MessagesApi } from "@/api/messages"
+import InputMaxLength from "@/components/inputs/InputMaxLength"
 
 
 export default function HomePage() {
@@ -36,9 +37,7 @@ export default function HomePage() {
 
     useEffect(() => {
         if (!workspaceId) return
-        listChannels(workspaceId).then(channels => {
-            setChannels(channels)
-        })
+        loadChannels()
         getWorkpace(workspaceId).then(workspace => {
             setWorkspace(workspace)
         })
@@ -54,6 +53,12 @@ export default function HomePage() {
             setMessages(messages)
         })
     }
+    function loadChannels() {
+        if (!workspaceId) return
+        listChannels(workspaceId).then(channels => {
+            setChannels(channels)
+        })
+    }
 
     return <main>
         <Sidebar
@@ -61,6 +66,7 @@ export default function HomePage() {
             user={user}
             workspace={workspace}
             currentChannelId={channelId}
+            onAddChannel={loadChannels}
         />
         <MainContent channel={channel} messages={messages} loadMessages={loadMessages} />
     </main>
@@ -68,8 +74,9 @@ export default function HomePage() {
 
 type SidebarProps = {
     user: UserModel | null, workspace: WorkspaceModel | null, channels: ChannelModel[], currentChannelId?: string
+    onAddChannel: () => void
 }
-function Sidebar({ user, workspace, channels, currentChannelId }: SidebarProps) {
+function Sidebar({ user, workspace, channels, currentChannelId, onAddChannel }: SidebarProps) {
     return <aside className="flex flex-col text-gray-300">
         <div className="flex justify-between mb-4">
             <Button variant="ghost" className="text-md mr-2"><b>{workspace?.name}<ChevronDown className="inline-block mt-[-2px]" size={16} /> </b></Button>
@@ -93,37 +100,13 @@ function Sidebar({ user, workspace, channels, currentChannelId }: SidebarProps) 
         <SideDropdown trigger="Channels">
             <ul>
                 {channels.map(channel => <ChannelLink key={channel.id} channel={channel} selectedChannelId={currentChannelId} />)}
-                <li><Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add channels</Button></li>
+                <li><AddChannelDialog workspaceId={workspace?.id} onAdd={onAddChannel} /></li>
             </ul>
         </SideDropdown>
         <SideDropdown trigger="Direct messages">
             <ul>
                 {user && <ChannelLink channel={{ id: "clogan202", name: "clogan202" } as any} selectedChannelId={currentChannelId} />}
-                <li>
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add coworkers</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Invite people to Boogl</DialogTitle>
-                            </DialogHeader>
-                            <form onSubmit={e => e.preventDefault()}>
-                                <div className="flex flex-col">
-                                    <label>To:</label>
-                                    <input type="email" className="w-full h-23 border border-solid rounded-md p-2" placeholder="name@example.com" />
-                                    <DialogClose asChild>
-                                        <div className="flex justify-end">
-                                            <Button onClick={() => {
-                                                console.log("sending")
-                                            }} variant="success" className="mt-3">Submit</Button>
-                                        </div>
-                                    </DialogClose>
-                                </div>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
-                </li>
+                <li><AddDMDialog /></li>
             </ul>
         </SideDropdown>
         <SideDropdown trigger="Apps" defaultOpen={false}>
@@ -137,15 +120,81 @@ function Sidebar({ user, workspace, channels, currentChannelId }: SidebarProps) 
     </aside>
 }
 
+function AddChannelDialog({ workspaceId, onAdd }: { workspaceId?: string, onAdd: () => void }) {
+    const [name, setName] = useState("")
+    const [open, setOpen] = useState(false)
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        if (!workspaceId) return
+        if (!name) return
+        try {
+            await ChannelApi.create(workspaceId, name)
+            onAdd()
+            setOpen(false)
+            setName("")
+        } catch (error) {
+            if (error instanceof Error) {
+                console.log(error.message)
+            }
+        }
+    }
+    return <Dialog onOpenChange={state => setOpen(state)} open={open}>
+        <DialogTrigger asChild>
+            <Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add channel</Button>
+        </DialogTrigger>
+        <DialogContent showCloseIcon>
+            <DialogHeader>
+                <DialogTitle className="text-xl">Create a channel</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="flex flex-col">
+                <div className="w-full">
+                    <label>Name</label>
+                    <InputMaxLength max={80} value={name} onChange={e => setName(e.target.value)} />
+                </div>
+                <div className="flex justify-end">
+                    <Button variant="success" className="mt-3">Submit</Button>
+                </div>
+            </form>
+        </DialogContent>
+    </Dialog>
+}
+
+function AddDMDialog() {
+    return <Dialog>
+        <DialogTrigger asChild>
+            <Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add coworkers</Button>
+        </DialogTrigger>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Invite people to Boogl</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={e => e.preventDefault()}>
+                <div className="flex flex-col">
+                    <label>To:</label>
+                    <input type="email" className="w-full h-23 border border-solid rounded-md p-2" placeholder="name@example.com" />
+                    <DialogClose asChild>
+                        <div className="flex justify-end">
+                            <Button onClick={() => {
+                                console.log("sending")
+                            }} variant="success" className="mt-3">Submit</Button>
+                        </div>
+                    </DialogClose>
+                </div>
+            </form>
+        </DialogContent>
+    </Dialog>
+}
+
 type MainContentProps = {
     channel?: ChannelModel, messages: (MessageModel & UserModel)[], loadMessages: () => void
 }
 function MainContent({ channel, messages, loadMessages }: MainContentProps) {
     const messageContaineRef = useRef<HTMLDivElement | null>(null)
-    if (!channel) { return null }
     useEffect(() => {
         messageContaineRef.current?.scrollTo({ top: messageContaineRef.current?.scrollHeight, behavior: "smooth" })
     }, [channel, messages])
+
+    if (!channel) { return null }
 
     return <div className="workspace text-gray-900 h-max flex flex-col">
         <div className="border-b border-solid p-3">

@@ -16,7 +16,9 @@ router.post('/', authMiddleware, asyncWrapper(async (req, res, next) => {
         return
     }
 
+    // TODO: make transaction
     const channel = await ChannelModel.create(userId, name, workspace_id, topic, description, is_private);
+    await ChannelModel.addUser(userId, channel.id, userId);
     res.json({ channel })
 }))
 

@@ -98,6 +98,8 @@ export default class ChannelModel {
 }
 
 async function authMemberOfChannel(channelId: string, userId: string) {
+    const queryUsers = await pool.query('SELECT * FROM channels WHERE id = $1 AND user_id = $2', [channelId, userId])
+    if (queryUsers.rowCount === 1) return
     const query = await pool.query(
         'SELECT * FROM channels_users WHERE channels_id = $1 AND users_id = $2',
         [channelId, userId]

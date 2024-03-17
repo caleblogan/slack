@@ -50,7 +50,6 @@ export default function App() {
   }, [])
 
   function loadUser() {
-    console.log("Loading user...")
     getMe()
       .then((thisUser) => { setUser(thisUser); })
       .catch((err) => {
