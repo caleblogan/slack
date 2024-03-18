@@ -1,6 +1,6 @@
 import { Search } from "lucide-react"
 import { useEffect, useState } from "react"
-import ChannelModel, { ChannelCounts } from "../../../server/src/models/ChannelModel"
+import { ChannelCounts } from "../../../server/src/models/ChannelModel"
 import { useParams } from "react-router-dom"
 import { listChannels as listUsersChannels } from "@/api/users"
 import { ChannelApi } from "@/api/channels"
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 const placeHolder = "Search for channels"
 export default function ChannelsPage() {
     const { workspaceId } = useParams()
-    const [search, setSearch] = useState("")
+    const [search, setSearch] = useState(placeHolder)
     const [touched, setTouched] = useState<boolean>(false)
     const [channels, setChannels] = useState<ChannelCounts[]>([])
     const [usersChannels, setUsersChannels] = useState<Set<string>>(new Set())

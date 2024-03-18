@@ -1,10 +1,9 @@
 import express from "express"
 import cors from "cors"
-import expressSession from "express-session"
-import pgSession from "connect-pg-simple"
 
-import pool from "./db"
-import { envOnly, requireJSONHeader } from "./middleware"
+import http from "http"
+
+import { envOnly } from "./middleware"
 import { config } from "./config"
 import authRouter from "./controllers/auth"
 import debugRouter from "./controllers/debug"
@@ -13,6 +12,8 @@ import channelsRouter from "./controllers/channels"
 import messagesRouter from "./controllers/messages"
 import usersRouter from "./controllers/users"
 import { ApiUser } from "./models/UserModel"
+import { websockUpgradeHandler } from "./websockets"
+import { sessionParse } from "./session"
 
 declare global {
     namespace Express {
@@ -26,26 +27,15 @@ declare module 'express-session' {
     interface SessionData {
         user?: ApiUser
         githubToken?: string
-        hi?: string
     }
 }
 
 const app = express()
 const port = config.port
-const store = pgSession(expressSession)
 
 app.use(express.json())
-// app.use(requireJSONHeader)
 app.use(cors({ credentials: true, origin: true }));
-app.use(expressSession({
-    store: new store({
-        pool: pool
-    }),
-    secret: config.sessionSecret,
-    resave: false,
-    cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }, // 30 days
-    saveUninitialized: false
-}));
+app.use(sessionParse)
 
 app.use('/auth', authRouter)
 app.use('/workspaces', workspacesRouter)
@@ -62,7 +52,11 @@ app.use((err: any, req: any, res: any, next: Function) => {
     }
 })
 
-app.listen(port, () => {
+const httpServer = http.createServer(app);
+
+httpServer.on('upgrade', websockUpgradeHandler);
+
+httpServer.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
 

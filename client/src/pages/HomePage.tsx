@@ -17,6 +17,7 @@ import { UserModel } from "../../../server/src/models/UserModel"
 import { MessagesApi } from "@/api/messages"
 import InputMaxLength from "@/components/inputs/InputMaxLength"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useWebSocket } from "@/hooks/websockets"
 
 
 export default function HomePage() {
@@ -27,6 +28,27 @@ export default function HomePage() {
     const [channels, setChannels] = useState<ChannelModel[]>([])
     const [workspace, setWorkspace] = useState<WorkspaceModel | null>(null)
     const [messages, setMessages] = useState<(MessageModel & UserModel)[]>([])
+    const { status, WebsockApi } = useWebSocket("ws://localhost:3000", handleMessage);
+
+    console.log("SOCKET STATUS", status)
+
+    function handleMessage({ action, data }: { action: string, data?: any }) {
+        console.log("Message from server action=", action, "data=", data);
+        if (action === "channels.connect") {
+            console.log("CONNECTED TO CHANNEL", data.channelId)
+        } else if (action === "messages.new") {
+            console.log("NEW MESSAGE", data)
+        } else if (action === "channels.leave") {
+            console.log("LEFT CHANNEL", data.channelId)
+        }
+    }
+
+    useEffect(() => {
+        if (status === "Open" && channelId) {
+            WebsockApi.Channels.connect(channelId)
+        }
+    }, [status, channelId])
+
 
     const channel = channels.find(c => c.id === channelId)
 
