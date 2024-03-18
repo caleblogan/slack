@@ -33,6 +33,17 @@ router.get('/', authMiddleware, asyncWrapper(async (req, res, next) => {
     res.json({ channels })
 }))
 
+router.get('/withMemberCounts', authMiddleware, asyncWrapper(async (req, res, next) => {
+    const userId = req.session.user?.id!
+    const { workspaceId } = req.query
+    if (!workspaceId || typeof workspaceId !== "string") {
+        res.status(400).json({ errors: [{ type: "validation", name: "workspaceId", message: "workspaceId query parameter is required" }] })
+        return
+    }
+    const channels = await ChannelModel.listWithMembersCount(userId, workspaceId);
+    res.json({ channels })
+}))
+
 router.delete('/:channelId', authMiddleware, asyncWrapper(async (req, res, next) => {
     const userId = req.session.user?.id!
     const { channelId } = req.params
@@ -64,6 +75,12 @@ router.post('/:channelId/users', authMiddleware, asyncWrapper(async (req, res, n
         return
     }
     const channel = await ChannelModel.addUser(userId, req.params.channelId, idToAdd);
+    res.json({ channel })
+}))
+
+router.post('/:channelId/join', authMiddleware, asyncWrapper(async (req, res, next) => {
+    const userId = req.session.user?.id!
+    const channel = await ChannelModel.join(userId, req.params.channelId);
     res.json({ channel })
 }))
 

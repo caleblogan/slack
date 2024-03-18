@@ -90,11 +90,11 @@ function RailLink({ to, icon, name, end }: { to: string, icon: React.JSX.Element
 // TODO: use url to get active link
 function WorkspaceLink() {
     const [workspaceOpen, setWorkspaceOpen] = useState(false)
+    const { user } = useContext(UserContext)
     const [workspaces, setWorkspaces] = useState<WorkspaceModel[]>([])
     useEffect(() => {
         loadWorkSpaces()
-    }, [])
-    if (!workspaces.length) return null
+    }, [user])
 
     function loadWorkSpaces() {
         listWorkspaces()
@@ -103,6 +103,7 @@ function WorkspaceLink() {
             })
     }
 
+    if (!workspaces?.length) return null
     return <>
         <DropdownMenu>
             <DropdownMenuTrigger asChild>

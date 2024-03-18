@@ -9,6 +9,8 @@ interface ChannelsUsersModel {
     created_at: Date
 }
 
+export type ChannelCounts = ChannelModel & { count: string }
+
 export default class ChannelModel {
     public id: string
     public name: string
@@ -46,6 +48,15 @@ export default class ChannelModel {
             [userId, workspaceId])
         console.log(queryResult.rows)
         return queryResult.rows.map((row: any) => new ChannelModel(row))
+    }
+
+    // TODO: enforce permissions - only a memmber of the workspace can list channel
+    static async listWithMembersCount(userId: string, workspaceId: string) {
+        const queryResult = await pool.query(
+            'SELECT *, (select Count(*) from channels_users where id=channels_users.channels_id) FROM channels where workspace_id=$1',
+            [workspaceId])
+        console.log(queryResult.rows)
+        return queryResult.rows as ChannelCounts[]
     }
 
     static async delete(userId: string, channelId: string) {
@@ -94,6 +105,15 @@ export default class ChannelModel {
             'SELECT * FROM messages JOIN users ON messages.user_id=users.id WHERE channel_id = $1',
             [channelId])
         return query.rows as MessageModel[]
+    }
+    static async join(userId: string, channelId: string) {
+        const queryChannel = await this.getChannel(channelId)
+        await authMemberOfWorkspace(queryChannel?.workspace_id, userId)
+        const query = await pool.query(
+            'INSERT INTO channels_users (channels_id, users_id) VALUES ($1, $2) RETURNING *',
+            [channelId, userId])
+        return query.rows[0] as ChannelsUsersModel
+
     }
 }
 

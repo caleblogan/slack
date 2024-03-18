@@ -1,6 +1,5 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
-import './App.css'
 import { UserContext } from './context';
 import { useEffect, useState } from 'react';
 import { ApiUser } from '../../server/src/models/UserModel';
@@ -11,12 +10,13 @@ import ActivityPage from './pages/ActivityPage';
 import LaterPage from './pages/LaterPage';
 import { getMe } from './api/users';
 import Redirect from './components/Redirect';
+import ChannelsPage from './pages/ChannelsPage';
 
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Redirect to="/client/T6BEC06K1" />
+    element: <Redirect to="/client" />
   },
   {
     path: "/client/:workspaceId?",
@@ -37,7 +37,11 @@ const router = createBrowserRouter([
       {
         path: "later",
         element: <LaterPage />
-      }
+      },
+      {
+        path: "channels",
+        element: <ChannelsPage />
+      },
     ]
   }
 ]);

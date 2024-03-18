@@ -5,7 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@radix-ui/react-collapsible"
 import { ChevronDown, ChevronRight, Filter, MailPlus, MessageCircleMore, Plus, Rocket, SendHorizonal, UserRoundPlus } from "lucide-react"
 import { useContext, useEffect, useRef, useState } from "react"
-import { useNavigate, useParams, useLocation, NavLink } from "react-router-dom"
+import { useNavigate, useParams, useLocation, NavLink, Link } from "react-router-dom"
 import { UserContext } from "@/context"
 import ChannelModel from "../../../server/src/models/ChannelModel"
 import { listChannels } from "@/api/users"
@@ -16,6 +16,7 @@ import { ChannelApi, listMessages } from "@/api/channels"
 import { UserModel } from "../../../server/src/models/UserModel"
 import { MessagesApi } from "@/api/messages"
 import InputMaxLength from "@/components/inputs/InputMaxLength"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 
 export default function HomePage() {
@@ -100,7 +101,8 @@ function Sidebar({ user, workspace, channels, currentChannelId, onAddChannel }: 
         <SideDropdown trigger="Channels">
             <ul>
                 {channels.map(channel => <ChannelLink key={channel.id} channel={channel} selectedChannelId={currentChannelId} />)}
-                <li><AddChannelDialog workspaceId={workspace?.id} onAdd={onAddChannel} /></li>
+                {/* <li><AddChannelDialog workspaceId={workspace?.id} onAdd={onAddChannel} /></li> */}
+                <li><AddChannel workspaceId={workspace?.id} onAdd={onAddChannel} /></li>
             </ul>
         </SideDropdown>
         <SideDropdown trigger="Direct messages">
@@ -120,9 +122,33 @@ function Sidebar({ user, workspace, channels, currentChannelId, onAddChannel }: 
     </aside>
 }
 
-function AddChannelDialog({ workspaceId, onAdd }: { workspaceId?: string, onAdd: () => void }) {
+function AddChannel({ workspaceId, onAdd }: { workspaceId?: string, onAdd: () => void }) {
+    const [openAddChannel, setOpenAddChannel] = useState(false)
+    return <>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2 border-none" />Add channel</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="p-0 border-none pt-3 pb-3">
+                <DropdownMenuItem className="cursor-pointer focus:bg-[#1264A3] focus:text-white m-0 pl-6 pr-6 rounded-none"
+                    onClick={() => setOpenAddChannel(true)}
+                >
+                    Create a new channel
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer focus:bg-[#1264A3] focus:text-white m-0 pl-6 pr-6 rounded-none" >
+                    <Link to={`/client/${workspaceId}/channels`}>Browse channels</Link>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+        <AddChannelDialog workspaceId={workspaceId} onAdd={onAdd} open={openAddChannel} onClose={() => setOpenAddChannel(false)} />
+    </>
+}
+
+type AddChannelDialogProps = {
+    workspaceId?: string, onAdd: () => void, open: boolean, onClose: () => void
+}
+function AddChannelDialog({ workspaceId, onAdd, open, onClose }: AddChannelDialogProps) {
     const [name, setName] = useState("")
-    const [open, setOpen] = useState(false)
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
         if (!workspaceId) return
@@ -130,7 +156,7 @@ function AddChannelDialog({ workspaceId, onAdd }: { workspaceId?: string, onAdd:
         try {
             await ChannelApi.create(workspaceId, name)
             onAdd()
-            setOpen(false)
+            onClose()
             setName("")
         } catch (error) {
             if (error instanceof Error) {
@@ -138,9 +164,9 @@ function AddChannelDialog({ workspaceId, onAdd }: { workspaceId?: string, onAdd:
             }
         }
     }
-    return <Dialog onOpenChange={state => setOpen(state)} open={open}>
+    return <Dialog onOpenChange={onClose} open={open}>
         <DialogTrigger asChild>
-            <Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add channel</Button>
+            {/* <Button variant="ghost" className="w-full h-7 justify-start"><Plus size={14} className="mr-2" />Add channel</Button> */}
         </DialogTrigger>
         <DialogContent showCloseIcon>
             <DialogHeader>
