@@ -14,10 +14,9 @@ import MessageModel from "../../../server/src/models/MessageModel"
 import { getWorkpace } from "@/api/workspaces"
 import { ChannelApi, listMessages } from "@/api/channels"
 import { UserModel } from "../../../server/src/models/UserModel"
-import { MessagesApi } from "@/api/messages"
 import InputMaxLength from "@/components/inputs/InputMaxLength"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useWebSocket } from "@/hooks/websockets"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { WebsocketApi, useWebSocket } from "@/hooks/websockets"
 
 
 export default function HomePage() {
@@ -30,14 +29,13 @@ export default function HomePage() {
     const [messages, setMessages] = useState<(MessageModel & UserModel)[]>([])
     const { status, WebsockApi } = useWebSocket("ws://localhost:3000", handleMessage);
 
-    console.log("SOCKET STATUS", status)
-
     function handleMessage({ action, data }: { action: string, data?: any }) {
         console.log("Message from server action=", action, "data=", data);
         if (action === "channels.connect") {
             console.log("CONNECTED TO CHANNEL", data.channelId)
         } else if (action === "messages.new") {
             console.log("NEW MESSAGE", data)
+            setMessages(prev => [...prev, data])
         } else if (action === "channels.leave") {
             console.log("LEFT CHANNEL", data.channelId)
         }
@@ -48,7 +46,6 @@ export default function HomePage() {
             WebsockApi.Channels.connect(channelId)
         }
     }, [status, channelId])
-
 
     const channel = channels.find(c => c.id === channelId)
 
@@ -91,7 +88,7 @@ export default function HomePage() {
             currentChannelId={channelId}
             onAddChannel={loadChannels}
         />
-        <MainContent channel={channel} messages={messages} loadMessages={loadMessages} />
+        <MainContent channel={channel} messages={messages} loadMessages={loadMessages} websocketApi={WebsockApi} />
     </main>
 }
 
@@ -234,9 +231,10 @@ function AddDMDialog() {
 }
 
 type MainContentProps = {
-    channel?: ChannelModel, messages: (MessageModel & UserModel)[], loadMessages: () => void
+    channel?: ChannelModel, messages: (MessageModel & UserModel)[], loadMessages: () => void,
+    websocketApi: WebsocketApi
 }
-function MainContent({ channel, messages, loadMessages }: MainContentProps) {
+function MainContent({ channel, messages, loadMessages, websocketApi }: MainContentProps) {
     const messageContaineRef = useRef<HTMLDivElement | null>(null)
     useEffect(() => {
         messageContaineRef.current?.scrollTo({ top: messageContaineRef.current?.scrollHeight, behavior: "smooth" })
@@ -263,20 +261,16 @@ function MainContent({ channel, messages, loadMessages }: MainContentProps) {
                 }
             </div>
         </div>
-        <NewMessageBox channel={channel} onAdd={() => {
-            loadMessages()
-            // messageContaineRef.current?.scrollTo(0, messageContaineRef.current?.scrollHeight)
-        }} />
+        <NewMessageBox channel={channel} onAdd={() => loadMessages()} websocketApi={websocketApi} />
     </div>
 }
 
-function NewMessageBox({ channel, onAdd }: { channel?: ChannelModel, onAdd: (message: string) => void }) {
+function NewMessageBox({ channel, websocketApi }: { channel?: ChannelModel, onAdd: (message: string) => void, websocketApi: WebsocketApi }) {
     const [message, setMessage] = useState("")
     const textAreaRef = useRef<HTMLTextAreaElement | null>(null)
     async function handleSubmit() {
         if (!channel?.id) return null
-        await MessagesApi.create(channel.id, message)
-        onAdd(message)
+        websocketApi.Messaages.send(message)
         setMessage("")
         textAreaRef.current?.focus()
     }

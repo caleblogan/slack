@@ -1,6 +1,7 @@
 import { Request } from "express";
 import { WebSocket, WebSocketServer } from "ws";
 import { sessionParse } from "./session";
+import MessageModel from "./models/MessageModel";
 
 type WebsocketRequest = {
     action: string
@@ -43,7 +44,7 @@ wss.on('connection', function (ws: WebSocket & WebSocketServer, request: Request
 
     ws.on('error', console.error);
 
-    ws.on('message', function (message: string) {
+    ws.on('message', async function (message: string) {
         if (!userId) return;
         console.log(`Received message ${message} from user ${userId}`);
         const { action, data } = JSON.parse(message) as WebsocketRequest;
@@ -52,7 +53,8 @@ wss.on('connection', function (ws: WebSocket & WebSocketServer, request: Request
                 console.log("NEW MESSAGE", data)
                 const { channelId } = clients.get(userId) ?? {}
                 if (!channelId) return
-                broadcast(channelId, { action: "messages.new", data })
+                const message = await MessageModel.create(userId, data, channelId);
+                broadcast(channelId, { action: "messages.new", data: { ...message, ...request.session.user } })
                 break
             }
             case "channels.connect": {

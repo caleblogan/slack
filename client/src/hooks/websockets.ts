@@ -62,14 +62,18 @@ export function useWebSocket(url: string, onMessage: (message: { action: string,
         }
     }
 
-    const WebsockApi = {
+    const WebsockApi: WebsocketApi = {
         Messaages: new Messages(sendMessage),
         Channels: new Channels(sendMessage)
-    } as const
+    }
 
     return { sendMessage, status: connectionStatus, close: () => ws.current?.close(), WebsockApi }
 }
 
+export type WebsocketApi = {
+    Messaages: Messages
+    Channels: Channels
+}
 type TSendMessage = (message: { action: string, data?: any }) => void
 
 abstract class SockAPI {
